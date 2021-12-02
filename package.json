@@ -1,0 +1,41 @@
+{
+    "name": "armor-animator",
+    "productName": "ArmorAnimator",
+    "description": "A Minecraft: Java Edition entity animator!",
+    "version": "0.5.17",
+    "author": "Some Kitten",
+    "build": {
+        "appId": "space.cutekitten.armoranimator",
+        "productName": "ArmorAnimator"
+    },
+    "scripts": {
+        "dev": "vite",
+        "build": "vite build --emptyOutDir",
+        "serve": "vite preview"
+    },
+    "dependencies": {
+        "chokidar": "^3.5.2",
+        "client-zip": "^2.0.0",
+        "drag-drop": "^7.2.0",
+        "lodash": "^4.17.21",
+        "three": "^0.131.3",
+        "vite": "^2.6.14"
+    },
+    "devDependencies": {
+        "@types/lodash": "^4.14.172",
+        "@types/three": "^0.131.0",
+        "@typescript-eslint/eslint-plugin": "^4.30.0",
+        "@typescript-eslint/parser": "^4.30.0",
+        "eslint": "^7.32.0",
+        "eslint-config-prettier": "8.3.0",
+        "eslint-config-standard": "^16.0.3",
+        "eslint-plugin-import": "^2.24.2",
+        "eslint-plugin-node": "^11.1.0",
+        "eslint-plugin-prettier": "4.0.0",
+        "eslint-plugin-promise": "^5.1.0",
+        "husky": "7.0.2",
+        "lint-staged": "11.1.2",
+        "prettier": "2.3.2",
+        "typescript": "^4.3.5"
+    }
+}

@@ -1,0 +1,389 @@
+import _, { clamp, floor } from 'lodash'
+import { Vector2 } from 'three'
+import { saveCommands } from './command_generator'
+import {
+    deselect,
+    highlightedPart,
+    raycaster,
+    resetRotating,
+    resetTranslating,
+    rotating,
+    select,
+    setActualRotation,
+    startControls,
+    translating,
+} from './controls'
+import {
+    frame,
+    frameAmount,
+    frameData,
+    moveTimelineBar,
+    nextFrame,
+    prevFrame,
+    setFrame,
+    timelineBarRelease,
+    timelineSelectBar,
+} from './frames'
+import { Codes } from './interfaces'
+import { wrap } from './maths'
+import { loadModel, models } from './model_loader'
+import { height, renderer, width } from './render'
+import { cubes, deleteEntity, playing, setPlaying } from './util'
+import { deleteKeyframe, dragKeyframes, dragKeyframeTo, resetDragKeyframe, updateAllKeyframes } from './keyframes'
+import { camera, cameraControls, camOrbit, lookAt } from './camera'
+import { debugLog } from './debug'
+
+export const mouse = new Vector2()
+export let sensitivity = 0.007
+
+export let camSpeed = 0.1
+
+export let codes: Codes = {}
+
+export let isMouseDown = false
+export let mouseButton = -1
+export let isMouseDrag = false
+
+export let searchPreview: string[] = []
+export let searchSelection = 0
+export const searchElement = document.getElementById('search')
+export const searchInputElement: HTMLInputElement = document.getElementById('search-input') as HTMLInputElement
+
+searchInputElement.onblur = function () {
+    // updateSearch("");
+
+    if (document.getElementById('search-results') !== null) {
+        document.getElementById('search-results').remove()
+    }
+}
+
+searchInputElement.onfocus = function () {
+    updateSearch(searchInputElement.value)
+}
+
+// ipcRenderer.on('window-blur', allKeysUp)
+export function allKeysUp() {
+    codes = {}
+}
+
+export function setMouseDrag(mouseDrag: boolean) {
+    isMouseDrag = mouseDrag
+}
+
+document.onmouseup = function (event) {
+    event.preventDefault()
+
+    timelineBarRelease()
+
+    setMouseDown(false)
+    resetRotating()
+    resetTranslating()
+
+    resetDragKeyframe()
+
+    if (!isMouseDrag && document.getElementById('download') === null) {
+        if (event.button === 0) leftClick()
+        if (event.button === 2) rightClick()
+    }
+}
+
+export function leftClick() {
+    const intersects = raycaster.intersectObjects(cubes.parts)
+
+    if (intersects.length > 0) {
+        select(intersects[0].object.parent)
+    } else {
+        deselect()
+    }
+}
+
+export function rightClick() {}
+
+export function setMouseDown(mouseDown: boolean) {
+    isMouseDown = mouseDown
+}
+
+export function mouseDown(button: number) {
+    isMouseDown = true
+    mouseButton = button
+    isMouseDrag = false
+}
+
+export function onSceneMouseDown(event: MouseEvent) {
+    mouseDown(event.button)
+    startControls()
+}
+
+export function onSearch(event: Event) {
+    event.preventDefault()
+
+    if (loadModel(searchPreview[searchSelection])) {
+        document.getElementById('search-input').blur()
+    }
+
+    updateSearch('')
+}
+
+export function onSearchType(event: Event) {
+    event.preventDefault()
+
+    const pending = searchInputElement.value
+    updateSearch(pending)
+}
+
+function addSearchResult(f: string, pending: string) {
+    let filename = f.replace(/^.*[\\\/]/, '').slice(0, -8)
+
+    if (filename.includes(pending)) {
+        let searchResults = null
+        if (document.getElementById('search-results') === null) {
+            searchResults = document.createElement('ul')
+            searchResults.id = 'search-results'
+            searchElement.appendChild(searchResults)
+        } else {
+            searchResults = document.getElementById('search-results')
+        }
+
+        let number = searchResults.children.length
+        let listElement = document.createElement('li')
+        listElement.addEventListener('mouseover', () => setSearchSelection(number))
+        listElement.addEventListener('mousedown', () => loadModel(searchPreview[searchSelection]))
+        listElement.innerHTML = filename.replace(/_/g, ' ')
+        searchResults.appendChild(listElement)
+        searchPreview.push(f)
+    }
+}
+
+function generateSearchResults(pending: string) {
+    let searchResults = null
+    for (let f of models) {
+        if (searchResults === null && document.getElementById('search-results') !== null) {
+            searchResults = document.getElementById('search-results')
+        }
+
+        const exactMatch = f.replace(/^.*[\\\/]/, '').slice(0, -8) === pending
+
+        if (exactMatch && searchPreview.length !== 0) {
+            let searchResults = null
+            if (document.getElementById('search-results') === null) {
+                // TODO use hidden attribute instead of removing and creating it
+                // TODO put searchResults in variable
+                searchResults = document.createElement('ul')
+                searchResults.id = 'search-results'
+                searchElement.appendChild(searchResults)
+            } else {
+                searchResults = document.getElementById('search-results')
+            }
+
+            let number = searchResults.children.length
+            if (number < 5) {
+                let listElement = document.createElement('li')
+                listElement.addEventListener('mouseover', () => setSearchSelection(number))
+                listElement.addEventListener('mousedown', () => loadModel(searchPreview[searchSelection]))
+
+                searchResults.appendChild(listElement)
+                searchPreview.push(searchPreview[0])
+                searchPreview[0] = f
+
+                const firstChild = searchResults.firstChild as HTMLElement
+
+                const temp = firstChild.innerHTML
+
+                firstChild.innerHTML = pending
+
+                listElement.innerHTML = temp
+            } else {
+                ;(searchResults.firstChild as HTMLElement).innerHTML = pending
+                searchPreview[0] = f
+            }
+        } else {
+            if (searchResults === null || searchResults.children.length < 5) {
+                addSearchResult(f, pending)
+            }
+        }
+    }
+}
+
+export function resetSearchSelection() {
+    searchSelection = 0
+}
+
+export function setSearchSelection(value: number) {
+    const searchResults = document.getElementById('search-results')
+
+    if (searchResults !== null) {
+        if (searchResults.children[searchSelection] !== undefined) {
+            searchResults.children[searchSelection].classList.remove('hover-search')
+        }
+
+        searchSelection = wrap(value, 0, searchResults.children.length - 1)
+
+        searchResults.children[searchSelection].classList.add('hover-search')
+    }
+}
+
+export function setSearchPreview(val: string[]) {
+    searchPreview = val
+}
+
+export function updateSearch(pending: string) {
+    pending = pending.endsWith(' ') ? pending.trim() + ' ' : pending.trim()
+
+    pending = pending === ' ' ? '' : pending
+
+    searchInputElement.value = pending
+
+    pending = pending.toLowerCase().replace(/ /g, '_')
+
+    if (document.getElementById('search-results') !== null) {
+        document.getElementById('search-results').remove()
+    }
+
+    setSearchPreview([])
+
+    if (pending !== '') {
+        generateSearchResults(pending)
+    }
+
+    setSearchSelection(0)
+}
+
+// NEXT copy/paste
+document.addEventListener('keydown', onDocumentKeyDown)
+export function onDocumentKeyDown(event: KeyboardEvent) {
+    if (event.code === 'Escape') {
+        deselect()
+
+        searchInputElement.blur()
+        updateSearch('')
+    }
+
+    if (document.body === document.activeElement) {
+        if (event.code === 'KeyX') {
+            lookAt(camera, camOrbit)
+        }
+    }
+
+    if (event.code === 'Delete') {
+        if (codes.ControlLeft) {
+            if (highlightedPart !== null) {
+                deleteEntity(highlightedPart)
+            }
+        } else if (codes.ShiftLeft) {
+            deleteKeyframe(frame, '')
+        } else {
+            if (highlightedPart !== null) {
+                deleteKeyframe(frame, highlightedPart.name)
+                setActualRotation()
+            }
+        }
+
+        updateAllKeyframes()
+    }
+
+    if (event.code === 'KeyS' && codes.ControlLeft) {
+        // TODO save
+    }
+    if (event.code === 'KeyO' && codes.ControlLeft) {
+        // TODO open
+    }
+    if (event.code === 'KeyE' && codes.ControlLeft) {
+        // TODO export
+    }
+
+    if (event.code === 'ArrowDown') {
+        setSearchSelection(searchSelection + 1)
+    }
+    if (event.code === 'ArrowUp') {
+        setSearchSelection(searchSelection - 1)
+    }
+
+    if (document.activeElement.tagName !== 'INPUT') {
+        if (event.code === 'ArrowRight') {
+            nextFrame()
+        }
+        if (event.code === 'ArrowLeft') {
+            prevFrame()
+        }
+    }
+
+    if (event.code === 'Space' && codes.ControlLeft) {
+        setPlaying(!playing)
+    }
+    if (event.code === 'Space' && codes.ShiftLeft) {
+        searchInputElement.focus()
+    }
+
+    // TODO undo
+
+    if (event.code === 'KeyD' && codes.ControlLeft) {
+        debugLog()
+    }
+
+    codes[event.code] = true
+}
+
+document.addEventListener('keyup', onDocumentKeyUp, false)
+function onDocumentKeyUp(event: KeyboardEvent) {
+    codes[event.code] = false
+}
+
+export function onScroll(event: { deltaY: number }) {
+    let camDist = camera.position.distanceTo(camOrbit)
+
+    let direction = camera.position.clone()
+    direction.sub(camOrbit)
+    direction.divideScalar(camDist)
+    camDist = Math.log2(camDist)
+
+    camDist += event.deltaY / 500
+
+    camDist = clamp(camDist, -2, 7)
+
+    camDist = Math.pow(2, camDist)
+    direction.multiplyScalar(camDist)
+    direction.add(camOrbit)
+    camera.position.set(direction.x, direction.y, direction.z)
+}
+
+export function timelineMove(event: MouseEvent) {
+    event.preventDefault()
+
+    const dragOverFrame = clamp(floor((event.clientX - 8) / ((width - 16) / frameAmount) + 0.5), 0, frameAmount - 1)
+
+    if (dragKeyframes === null) {
+        setFrame(dragOverFrame)
+
+        let head = document.getElementById('timeline-bar-head')
+        let bar = document.getElementById('timeline-bar')
+
+        head.style.left = clamp(event.x - 8, 0, width - 16) + 'px'
+        bar.style.left = clamp(event.x - 8, 0, width - 16) + 'px'
+    } else {
+        dragKeyframes[0].style.left = clamp(event.x - 8, 0, width - 16) + 'px'
+        if (dragKeyframes[1] !== undefined) {
+            dragKeyframes[1].style.left = clamp(event.x - 8, 0, width - 16) + 'px'
+        }
+        dragKeyframeTo(frameData, dragOverFrame)
+    }
+}
+
+document.addEventListener('mousemove', onMouseMove)
+export function onMouseMove(event: MouseEvent) {
+    mouse.x = (event.clientX / width) * 2 - 1
+    mouse.y = -(event.clientY / height) * 2 + 1
+
+    if (!moveTimelineBar) {
+        if (isMouseDown && rotating === '' && translating === '') {
+            cameraControls(event.movementX, event.movementY)
+        }
+    } else {
+        timelineMove(event)
+    }
+
+    setMouseDrag(true)
+}
+
+export function initInput() {
+    renderer.domElement.addEventListener('wheel', onScroll)
+}

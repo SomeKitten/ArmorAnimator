@@ -1,0 +1,18 @@
+{
+  "armor": {
+    "general": "",
+    "head": "H"
+  },
+  "freedom": {
+    "rotate": {
+      "general": "",
+      "body": "Y",
+      "head": "X",
+      "neck": "X"
+    },
+    "translate": {
+      "general": "",
+      "body": "XYZ"
+    }
+  }
+}

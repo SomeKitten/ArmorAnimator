@@ -1,0 +1,10 @@
+node_modules
+.DS_Store
+dist
+dist-ssr
+*.local
+**/res/blockstates/**/*.json
+**/res/models/**/*.json
+**/res/models/**/*.mimodel
+**/res/models/**/*.miframes
+**/res/textures
