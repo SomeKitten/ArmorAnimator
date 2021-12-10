@@ -1,7 +1,7 @@
 import { BoxGeometry, DoubleSide, Mesh, MeshBasicMaterial, NearestFilter, Object3D, Texture } from 'three'
 import { CubesObject } from './interfaces'
 import { genBlockUVs } from './model_loader'
-import { textureLoader } from './render'
+import { textureLoader, width } from './render'
 import { cubes, getChild, getCubesObject, getRootObject, memoizer } from './util'
 
 let currentHead = ''
@@ -63,6 +63,7 @@ export async function getHead(part: Object3D, name: string) {
 
 export let getSkin: Function
 
+export let headCache = {}
 export function initArmor() {
     getSkin = memoizer(async function (url: string) {
         // TODO fix old opaque hat-layer skins (e.g. Notch), they show up as black
@@ -86,21 +87,26 @@ export function initArmor() {
             cubeTexture.image = cubeImage
             cubeImage.onload = function () {
                 cubeTexture.needsUpdate = true
-            }
 
-            const height = cubeTexture.image.height
+                layer1.setAttribute(
+                    'uv',
+                    genBlockUVs(0, cubeTexture.image.height, 8, 8, 8, 64, cubeTexture.image.height),
+                )
+                layer2.setAttribute(
+                    'uv',
+                    genBlockUVs(32, cubeTexture.image.height, 8, 8, 8, 64, cubeTexture.image.height),
+                )
+            }
 
             cubeTexture.minFilter = NearestFilter
             cubeTexture.magFilter = NearestFilter
             const layer1 = new BoxGeometry(1, 1, 1)
-            layer1.setAttribute('uv', genBlockUVs(0, height, 8, 8, 8, 64, height))
             layer1.translate(0, 0.5, 0)
             layer1.scale(layer1Scale, layer1Scale, layer1Scale)
             const layer1Material = new MeshBasicMaterial({ map: cubeTexture })
             const layer1Mesh = new Mesh(layer1, layer1Material)
 
             const layer2 = new BoxGeometry(1, 1, 1)
-            layer2.setAttribute('uv', genBlockUVs(32, height, 8, 8, 8, 64, height))
             layer2.translate(0, 0.5 * layer2ToLayer1, 0)
             layer2.scale(layer2Scale, layer2Scale, layer2Scale)
             // TODO create variable for transparent material settings

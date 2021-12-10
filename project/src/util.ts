@@ -1,4 +1,5 @@
 import { Vector3, Quaternion, Spherical, Frustum, Object3D, Scene, Color, Clock } from 'three'
+import { headCache } from './armor'
 import { updateCamOrbit } from './camera'
 import { deselect, resetHighlightedPart } from './controls'
 import {
@@ -265,13 +266,12 @@ export function getNBTProperty(part: Object3D) {
 
 // https://scotch.io/tutorials/understanding-memoization-in-javascript
 export function memoizer(fun: Function) {
-    let cache = {}
     return function (n: any) {
-        if (cache[n] != undefined) {
-            return cache[n]
+        if (headCache[n] != undefined) {
+            return headCache[n]
         } else {
             let result = fun(n)
-            cache[n] = result
+            headCache[n] = result
             return result
         }
     }
