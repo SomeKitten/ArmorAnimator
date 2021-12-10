@@ -1,0 +1,1 @@
+/assets/minecraft/textures/ from .minecraft/versions/VERSION/VERSION.jar (open as a zip) 
