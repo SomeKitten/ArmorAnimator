@@ -4,9 +4,9 @@ This is animation software that allows you to export animations to Minecraft: Ja
 
 ## How to build.
 
-|     Debug     |     Run     | Release Build |
-| :-----------: | :---------: | :-----------: |
-| npm run debug | npm run run | npm run build |
+|     Dev     |     Serve     | Release Build |
+| :---------: | :-----------: | :-----------: |
+| npm run dev | npm run serve | npm run build |
 
 ## Comment structure.
 
