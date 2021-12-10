@@ -390,4 +390,8 @@ export function onMouseMove(event: MouseEvent) {
 
 export function initInput() {
     renderer.domElement.addEventListener('wheel', onScroll)
+
+    for (let element of document.getElementsByClassName('timeline-bar')) {
+        element.addEventListener('mousedown', (event: Event) => event.preventDefault())
+    }
 }
