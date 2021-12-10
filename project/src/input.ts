@@ -23,15 +23,18 @@ import {
     setFrame,
     timelineBarRelease,
     timelineSelectBar,
+    tweenedFrameData,
+    tweenFrames,
 } from './frames'
 import { Codes } from './interfaces'
 import { wrap } from './maths'
 import { loadModel, models } from './model_loader'
 import { height, renderer, width } from './render'
-import { cubes, deleteEntity, playing, setPlaying } from './util'
+import { cubes, deleteEntity, playing, projectName, setPlaying } from './util'
 import { deleteKeyframe, dragKeyframes, dragKeyframeTo, resetDragKeyframe, updateAllKeyframes } from './keyframes'
 import { camera, cameraControls, camOrbit, lookAt } from './camera'
 import { debugLog } from './debug'
+import saveAs from 'file-saver'
 
 export const mouse = new Vector2()
 export let sensitivity = 0.007
@@ -284,12 +287,11 @@ export function onDocumentKeyDown(event: KeyboardEvent) {
     if (event.code === 'KeyS' && codes.ControlLeft) {
         event.preventDefault()
 
-        // TODO save
-    }
-    if (event.code === 'KeyO' && codes.ControlLeft) {
-        event.preventDefault()
+        tweenFrames()
 
-        // TODO open
+        console.log(JSON.stringify(tweenedFrameData))
+
+        saveAs(new Blob([JSON.stringify(tweenedFrameData)]), `${projectName}.aaproj`)
     }
     if (event.code === 'KeyE' && codes.ControlLeft) {
         saveCommands()
