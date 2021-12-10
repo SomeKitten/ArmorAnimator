@@ -1,10 +1,7 @@
 {
-  "freedom":{
-    "rotate":{
-      "body":"XY"
-    },
-    "translate":{
-
+    "freedom": {
+        "rotate": {
+            "body": "XY"
+        }
     }
-  }
 }

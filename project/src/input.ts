@@ -282,14 +282,16 @@ export function onDocumentKeyDown(event: KeyboardEvent) {
     }
 
     if (event.code === 'KeyS' && codes.ControlLeft) {
+        event.preventDefault()
+
         // TODO save
     }
     if (event.code === 'KeyO' && codes.ControlLeft) {
+        event.preventDefault()
+
         // TODO open
     }
     if (event.code === 'KeyE' && codes.ControlLeft) {
-        event.preventDefault()
-
         saveCommands()
     }
 

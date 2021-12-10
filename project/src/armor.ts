@@ -1,7 +1,6 @@
 import { BoxGeometry, DoubleSide, Mesh, MeshBasicMaterial, NearestFilter, Object3D, Texture } from 'three'
 import { CubesObject } from './interfaces'
 import { genBlockUVs } from './model_loader'
-import { textureLoader, width } from './render'
 import { cubes, getChild, getCubesObject, getRootObject, memoizer } from './util'
 
 let currentHead = ''
@@ -51,12 +50,14 @@ function applyPlayerHead(part: Object3D, playerHead: Object3D) {
 export async function getHead(part: Object3D, name: string) {
     console.log('getHead', name)
 
-    // TODO allow textures.minecraft.net link
-    const head = await getSkin('https://api.ashcon.app/mojang/v2/user/' + name)
+    if (name !== '') {
+        // TODO allow textures.minecraft.net link
+        const head = await getSkin('https://api.ashcon.app/mojang/v2/user/' + name)
 
-    if (head !== null) {
-        head.name = part.name + '|head_' + name
-        return head
+        if (head !== null) {
+            head.name = part.name + '|head_' + name
+            return head
+        }
     }
     return null
 }

@@ -145,6 +145,7 @@ function generateNBT(tags: Tags) {
             }
         }
     }
+
     return nbt.slice(0, -1)
 }
 
@@ -356,6 +357,23 @@ function genericSummon(mob: string, frame: number) {
             Tags: [mob.replaceAll(/\|/g, '-'), 'animation'],
             NoGravity: 1,
             Invulnerable: 1,
+            ArmorItems:
+                data[mob + '|head'] === undefined ||
+                data[mob + '|head'].skullowner === undefined ||
+                data[mob + '|head'].skullowner === ''
+                    ? ''
+                    : [
+                          {},
+                          {},
+                          {},
+                          {
+                              id: 'player_head',
+                              Count: 1,
+                              tag: {
+                                  SkullOwner: data[mob + '|head'].skullowner,
+                              },
+                          },
+                      ],
         },
         nbtText,
     )
@@ -396,6 +414,23 @@ function genericMerge(mob: string, frame: number) {
         pos,
         {
             Rotation: body === '' || head === '' ? '' : [radToDeg(-body[1]), radToDeg(head[0])],
+            ArmorItems:
+                data[mob + '|head'] === undefined ||
+                data[mob + '|head'].skullowner === undefined ||
+                data[mob + '|head'].skullowner === ''
+                    ? ''
+                    : [
+                          {},
+                          {},
+                          {},
+                          {
+                              id: 'player_head',
+                              Count: 1,
+                              tag: {
+                                  SkullOwner: data[mob + '|head'].skullowner,
+                              },
+                          },
+                      ],
         },
         nbtText,
     )

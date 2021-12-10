@@ -42,22 +42,6 @@ export let playing = false
 export let lastFrame = 0
 export let clock = new Clock()
 
-// FIXME figure out which mobs can wear heads and implement code for them
-export const canWearArmor = {
-    armor_stand: true,
-    drowned: true,
-    giant: true,
-    husk: true,
-    piglin: true,
-    piglin_brute: true,
-    skeleton: true,
-    stray: true,
-    wither_skeleton: true,
-    zombie: true,
-    zombie_villager: true,
-    zombified_piglin: true,
-}
-
 export let projectDescription = 'An animation created with ArmorAnimator'
 export let projectName = 'MyProject'
 
