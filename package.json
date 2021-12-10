@@ -17,11 +17,13 @@
         "chokidar": "^3.5.2",
         "client-zip": "^2.0.0",
         "drag-drop": "^7.2.0",
+        "file-saver": "^2.0.5",
         "lodash": "^4.17.21",
         "three": "^0.131.3",
         "vite": "^2.6.14"
     },
     "devDependencies": {
+        "@types/file-saver": "^2.0.4",
         "@types/lodash": "^4.14.172",
         "@types/three": "^0.131.0",
         "@typescript-eslint/eslint-plugin": "^4.30.0",

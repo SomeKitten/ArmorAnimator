@@ -1,14 +1,28 @@
+import { downloadZip } from 'client-zip'
+import { saveAs } from 'file-saver'
 import { random, toNumber } from 'lodash'
 import { radToDeg } from 'three/src/math/MathUtils'
 
 import { frameAmount, commandFrameData, tweenFrames, tweenedFrameData } from './frames'
 import { Tags } from './interfaces'
 import { radArrToDeg } from './maths'
-import { cleanNumber, cubes, projectDescription } from './util'
+import { cleanNumber, cubes, projectDescription, projectName } from './util'
 
-export const killAll = 'kill @e[tag=animation]'
-export const timerReset = 'scoreboard players set timer animation 0'
+const killAll = 'kill @e[tag=animation]'
+const timerReset = 'scoreboard players set timer animation 0'
 const scoreboardTemplate = 'scoreboard objectives add animation dummy'
+const tickTemplate =
+    'execute unless score timer animation matches FRAMES.. run scoreboard players add timer animation 1\n' +
+    'execute if score timer animation matches FRAMES.. run scoreboard players set timer animation 0\n' +
+    'execute as @e[type=!player] run data merge entity @s {DeathTime:19}\n'
+const packMCMeta =
+    '{\n' +
+    '    "pack": {\n' +
+    '        "pack_format": 8,\n' +
+    '        "description": "DESCRIPTION"\n' +
+    '    }\n' +
+    '}\n'
+const tickJSON = '{ "values": [ "NAMESPACE:tick" ] }'
 
 let randomPrefixes = {}
 
@@ -140,7 +154,7 @@ function summonCommandGenerate(frame: number, entityName: string, xyz: number[],
     randomPrefixes[tags.Tags[0] as string] =
         Math.random()
             .toString(36)
-            .replace(/[^a-z]+/g, '')
+            .replaceAll(/[^a-z]+/g, '')
             .slice(0, 5) + '-'
     tags.Tags[0] = randomPrefixes[tags.Tags[0] as string] + tags.Tags[0]
     return (
@@ -213,7 +227,7 @@ function armorStandSummon(mob: string, frame: number) {
                 data[mob + '|base'] === undefined || data[mob + '|base'].rotation === undefined
                     ? ''
                     : [radToDeg(data[mob + '|base'].rotation[1]), 0],
-            Tags: [mob.replace(/\|/g, '-'), 'animation'],
+            Tags: [mob.replaceAll(/\|/g, '-'), 'animation'],
             ShowArms: 1,
             NoGravity: 1,
             Marker: 1,
@@ -248,7 +262,7 @@ function armorStandMerge(mob: string, frame: number) {
 
     return mergeCommandGenerate(
         frame,
-        mob.replace(/\|/g, '-'),
+        mob.replaceAll(/\|/g, '-'),
         pos,
         {
             Pose: {
@@ -339,7 +353,7 @@ function genericSummon(mob: string, frame: number) {
         pos,
         {
             Rotation: body === '' || head === '' ? '' : [radToDeg(-body[1]), radToDeg(head[0])],
-            Tags: [mob.replace(/\|/g, '-'), 'animation'],
+            Tags: [mob.replaceAll(/\|/g, '-'), 'animation'],
             NoGravity: 1,
             Invulnerable: 1,
         },
@@ -378,7 +392,7 @@ function genericMerge(mob: string, frame: number) {
 
     return mergeCommandGenerate(
         frame,
-        mob.replace(/\|/g, '-'),
+        mob.replaceAll(/\|/g, '-'),
         pos,
         {
             Rotation: body === '' || head === '' ? '' : [radToDeg(-body[1]), radToDeg(head[0])],
@@ -406,7 +420,7 @@ function generateMerge(mob: string, frame: number) {
     }
 }
 
-export function saveCommands() {
+export async function saveCommands() {
     tweenFrames()
 
     let start = killAll + '\n'
@@ -427,5 +441,33 @@ export function saveCommands() {
         }
     }
 
-    console.log(randomPrefixes)
+    const packMCMetaFile = {
+        name: 'pack.mcmeta',
+        lastModified: new Date(),
+        input: packMCMeta.replaceAll('DESCRIPTION', projectDescription),
+    }
+    const tickJSONFile = {
+        name: 'data/minecraft/tags/functions/tick.json',
+        lastModified: new Date(),
+        input: tickJSON.replaceAll('NAMESPACE', projectName.toLowerCase()),
+    }
+    const tickMCFunctionFile = {
+        name: `data/${projectName.toLowerCase()}/functions/tick.mcfunction`,
+        lastModified: new Date(),
+        input: tickTemplate.replaceAll('FRAMES', `${frameAmount}`),
+    }
+    const startFile = {
+        name: `data/${projectName.toLowerCase()}/functions/start.mcfunction`,
+        lastModified: new Date(),
+        input: start,
+    }
+    const loopFile = {
+        name: `data/${projectName.toLowerCase()}/functions/loop.mcfunction`,
+        lastModified: new Date(),
+        input: loop,
+    }
+
+    const blob = await downloadZip([packMCMetaFile, tickJSONFile, tickMCFunctionFile, startFile, loopFile]).blob()
+
+    saveAs(blob, projectName + '.zip')
 }

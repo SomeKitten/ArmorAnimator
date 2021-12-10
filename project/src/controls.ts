@@ -596,8 +596,6 @@ export function loadRotateSettings(part: Object3D) {
     let entity = part.name.split('|')[0]
     let partName = part.name.split('|')[2]
 
-    console.log(settings)
-
     if (
         settings[entity] !== undefined &&
         settings[entity].freedom !== undefined &&

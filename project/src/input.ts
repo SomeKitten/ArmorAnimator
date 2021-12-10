@@ -288,7 +288,9 @@ export function onDocumentKeyDown(event: KeyboardEvent) {
         // TODO open
     }
     if (event.code === 'KeyE' && codes.ControlLeft) {
-        // TODO export
+        event.preventDefault()
+
+        saveCommands()
     }
 
     if (event.code === 'ArrowDown') {
