@@ -76,6 +76,10 @@ export function updateKeyframes(data: FrameData, y: number) {
                 keyframe.classList.add('keyframe_' + y)
                 keyframe.src = 'images/diamond.png'
                 keyframe.addEventListener('mousedown', keyframeListeners[f])
+                keyframe.addEventListener('dragstart', (event: MouseEvent) => {
+                    event.preventDefault()
+                    return false
+                })
 
                 keyframe.style.left = (f / frameAmount) * (width - 16) + 'px'
                 keyframe.style.top = y + 'px'
