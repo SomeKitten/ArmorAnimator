@@ -52,7 +52,6 @@ export function setFrameAmount(value: number) {
 
     updateAllKeyframes()
     setFrame(frame)
-    setTimelineBar(frame)
 }
 
 export function resetFrameData() {
@@ -61,6 +60,7 @@ export function resetFrameData() {
 
 export function setFrameData(newData: FrameData) {
     frameData = newData
+
     tweenFrames()
     updateAllKeyframes()
 }
@@ -121,10 +121,6 @@ export function tweenProperty(frame: number, partName: string, propertyName: str
     let nextData = null
     if (nextFrame !== frameAmount) {
         nextData = frameData[nextFrame][partName][propertyName]
-
-        if (frame == -1) {
-            currentData = nextData
-        }
     } else {
         nextData = currentData
     }
@@ -196,16 +192,16 @@ export function setFrame(f: number) {
     loadFrameData(thisFrame)
 
     frameNumber.innerHTML = frame.toString()
+
+    setTimelineBar(f)
 }
 
 export function prevFrame() {
     setFrame(wrap(frame - 1, 0, frameAmount - 1))
-    setTimelineBar(frame)
 }
 
 export function nextFrame() {
     setFrame(wrap(frame + 1, 0, frameAmount - 1))
-    setTimelineBar(frame)
 }
 
 export function loadPartFrameData() {

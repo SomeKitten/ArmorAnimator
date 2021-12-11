@@ -128,6 +128,7 @@ export function notNull(obj: Object | null) {
 export function deleteAll() {
     resetCubes()
     resetFrameData()
+    deselect()
 
     const toDelete = []
     for (const obj of scene.children) {

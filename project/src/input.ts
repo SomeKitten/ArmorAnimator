@@ -21,16 +21,28 @@ import {
     nextFrame,
     prevFrame,
     setFrame,
+    setFrameAmount,
+    setFrameData,
     timelineBarRelease,
     timelineSelectBar,
     tweenedFrameData,
     tweenFrames,
 } from './frames'
-import { Codes } from './interfaces'
+import { Codes, FrameData, Json, ModelList } from './interfaces'
 import { wrap } from './maths'
-import { loadModel, models } from './model_loader'
+import { loadModel, modelCount, models, setModelCount } from './model_loader'
 import { height, renderer, width } from './render'
-import { cubes, deleteEntity, playing, projectName, setPlaying } from './util'
+import {
+    cubes,
+    deleteAll,
+    deleteEntity,
+    playing,
+    projectDescription,
+    projectName,
+    setPlaying,
+    setProjectDescription,
+    setProjectName,
+} from './util'
 import { deleteKeyframe, dragKeyframes, dragKeyframeTo, resetDragKeyframe, updateAllKeyframes } from './keyframes'
 import { camera, cameraControls, camOrbit, lookAt } from './camera'
 import { debugLog } from './debug'
@@ -87,6 +99,57 @@ document.onmouseup = function (event) {
     if (!isMouseDrag && document.getElementById('download') === null) {
         if (event.button === 0) leftClick()
         if (event.button === 2) rightClick()
+    }
+}
+
+document.ondragover = function (event) {
+    event.preventDefault()
+}
+
+document.ondrop = function (event) {
+    event.preventDefault()
+    if (event.dataTransfer.files.length > 0) {
+        event.dataTransfer.files[0].text().then((text) => loadFromJSON(JSON.parse(text)))
+    }
+}
+
+async function loadFromJSON(json: Json) {
+    if (
+        json.projectName === undefined ||
+        json.projectDescription === undefined ||
+        json.modelCount === undefined ||
+        json.models === undefined ||
+        json.frameData === undefined
+    ) {
+        alert('Invalid JSON file')
+        return
+    } else {
+        deleteAll()
+
+        if (json.projectName !== undefined) {
+            setProjectName(json.projectName as string)
+        }
+
+        if (json.projectDescription !== undefined) {
+            setProjectDescription(json.projectDescription as string)
+        }
+
+        if (json.models !== undefined) {
+            cubes.models = json.models as ModelList
+            for (const [key, model] of Object.entries(cubes.models)) {
+                await loadModel(model, key)
+            }
+        }
+
+        if (json.modelCount !== undefined) {
+            setModelCount(json.modelCount as number)
+        }
+
+        if (json.frameData !== undefined) {
+            setFrameData(json.frameData as FrameData)
+        }
+
+        setFrame(0)
     }
 }
 
@@ -287,11 +350,18 @@ export function onDocumentKeyDown(event: KeyboardEvent) {
     if (event.code === 'KeyS' && codes.ControlLeft) {
         event.preventDefault()
 
-        tweenFrames()
-
-        console.log(JSON.stringify(tweenedFrameData))
-
-        saveAs(new Blob([JSON.stringify(tweenedFrameData)]), `${projectName}.aaproj`)
+        saveAs(
+            new Blob([
+                JSON.stringify({
+                    projectName: projectName,
+                    projectDescription: projectDescription,
+                    modelCount: modelCount,
+                    models: cubes.models,
+                    frameData: frameData,
+                }),
+            ]),
+            `${projectName}.aaproj`,
+        )
     }
     if (event.code === 'KeyE' && codes.ControlLeft) {
         saveCommands()
