@@ -422,6 +422,28 @@ export function onScroll(event: { deltaY: number }) {
     camera.position.set(direction.x, direction.y, direction.z)
 }
 
+let hidden: string, visibilityChange
+if (typeof document.hidden !== 'undefined') {
+    // Opera 12.10 and Firefox 18 and later support
+    hidden = 'hidden'
+    visibilityChange = 'visibilitychange'
+} else if (typeof document.msHidden !== 'undefined') {
+    hidden = 'msHidden'
+    visibilityChange = 'msvisibilitychange'
+} else if (typeof document.webkitHidden !== 'undefined') {
+    hidden = 'webkitHidden'
+    visibilityChange = 'webkitvisibilitychange'
+}
+document.addEventListener(visibilityChange, handleVisibilityChange, false)
+window.addEventListener('blur', handleVisibilityChange, false)
+function handleVisibilityChange() {
+    console.log('visibility change')
+
+    for (const [key, value] of Object.entries(codes)) {
+        codes[key] = false
+    }
+}
+
 export function timelineMove(event: MouseEvent) {
     event.preventDefault()
 
