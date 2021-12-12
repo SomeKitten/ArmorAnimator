@@ -7,7 +7,6 @@
 // CONSTANT clean all unused imports
 // CONSTANT annotate why each function exists
 // CONSTANT remove as many 'document.getelementbyid' as possible
-// NEXT upload to github repository
 // NEXT limit usable entities to only ones that work
 // TODO advanced options such as "preloading" where entities such as cows can look beyond their limits
 // TODO look into parsing java code[by running it?] into models (Java Edition)

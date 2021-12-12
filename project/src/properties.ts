@@ -140,7 +140,6 @@ export function setPropertyValue(f: number, property: string, value: number | st
             ])
         }
         if (property === 'frames') {
-            // NEXT typing frame to 0 doesn't change back to 1?
             setFrameAmount(value)
         }
     } else if (typeof value === 'string') {

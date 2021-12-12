@@ -29,16 +29,10 @@ export let frameSpacing = 100
 // TODO put timeline in variable
 // TODO hide timeline when frameAmount is 1
 
-// for (let f = -1; f < frameAmount; f++) {
-//   cleanFrames[f] = {};
-// }
-// frameData = cloneDeep(cleanFrames);
-// partFrameData = cloneDeep(cleanFrames);
-// tweenedFrameData = cloneDeep(cleanFrames);
-// commandFrameData = cloneDeep(cleanFrames);
-
 export function setFrameAmount(value: number) {
     frameAmount = round(value) > 0 ? round(value) : 1
+
+    console.log(frameAmount)
 
     for (let f = -1; f < frameAmount; f++) {
         if (frameData[f] === undefined) {
@@ -51,7 +45,7 @@ export function setFrameAmount(value: number) {
     }
 
     updateAllKeyframes()
-    setFrame(frame)
+    setFrame(Math.min(frame, frameAmount - 1))
 }
 
 export function resetFrameData() {
