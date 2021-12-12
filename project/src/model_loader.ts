@@ -16,7 +16,7 @@ import { frameData, setFrame } from './frames'
 
 import { CubesChildren, CubesObject, Frame, FramePart, Json, ModelPart, ModelShape } from './interfaces'
 import { saveAllToFrame } from './properties'
-import { textureLoader } from './render'
+import { createTransparentMaterial, textureLoader } from './render'
 import { scene, cubes, settings, getChild, getAllModels } from './util'
 
 let scaleFactor = 1 / 16
@@ -111,15 +111,7 @@ export function genBlockUVs(u: number, v: number, x: number, y: number, z: numbe
 
 function genBlockChild(shape: ModelShape, texture: Texture, textureSize: number[]) {
     const geometry = new BoxGeometry()
-    const material = new MeshBasicMaterial({
-        color: 0xffffff,
-        map: texture,
-        transparent: false,
-        alphaTest: 0.5,
-        depthWrite: true,
-        depthTest: true,
-        side: DoubleSide,
-    })
+    const material = createTransparentMaterial(texture)
 
     let size = [shape.to[0] - shape.from[0], shape.to[1] - shape.from[1], shape.to[2] - shape.from[2]]
 
@@ -188,15 +180,7 @@ function genPlaneUVs(u: number, v: number, w: number, h: number, textureSize: nu
 
 function genPlaneChild(shape: ModelShape, texture: Texture, textureSize: number[]) {
     const geometry = new PlaneGeometry()
-    const material = new MeshBasicMaterial({
-        color: 0xffffff,
-        map: texture,
-        transparent: false,
-        alphaTest: 0.5,
-        depthWrite: true,
-        depthTest: true,
-        side: DoubleSide,
-    })
+    const material = createTransparentMaterial(texture)
 
     let size = [shape.to[0] - shape.from[0], shape.to[1] - shape.from[1], shape.to[2] - shape.from[2]]
 

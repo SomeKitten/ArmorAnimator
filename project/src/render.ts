@@ -21,6 +21,7 @@ import {
     LineBasicMaterial,
     BufferGeometry,
     Line,
+    Texture,
 } from 'three'
 import {
     canTranslateX,
@@ -69,15 +70,19 @@ export let zTranslateOutline: OutlinePassFill
 
 export let composer: EffectComposer
 
-export let transparentMaterial = new MeshBasicMaterial({
-    color: 0xffffff,
-    map: new TextureLoader().load('images/transparent.png'),
-    transparent: false,
-    alphaTest: 0.5,
-    depthWrite: true,
-    depthTest: true,
-    side: DoubleSide,
-})
+export function createTransparentMaterial(map: Texture) {
+    return new MeshBasicMaterial({
+        color: 0xffffff,
+        map: map,
+        transparent: false,
+        alphaTest: 0.5,
+        depthWrite: true,
+        depthTest: true,
+        side: DoubleSide,
+    })
+}
+
+export let transparentMaterial = createTransparentMaterial(new TextureLoader().load('images/transparent.png'))
 
 export let whiteMaterial = new MeshBasicMaterial({
     color: 0xffffff,

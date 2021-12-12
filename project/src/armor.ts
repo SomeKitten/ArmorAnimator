@@ -1,6 +1,7 @@
 import { BoxGeometry, DoubleSide, Mesh, MeshBasicMaterial, NearestFilter, Object3D, Texture } from 'three'
 import { CubesObject } from './interfaces'
 import { genBlockUVs } from './model_loader'
+import { createTransparentMaterial } from './render'
 import { cubes, getChild, getCubesObject, getRootObject, memoizer } from './util'
 
 let currentHead = ''
@@ -48,8 +49,6 @@ function applyPlayerHead(part: Object3D, playerHead: Object3D) {
 }
 
 export async function getHead(part: Object3D, name: string) {
-    console.log('getHead', name)
-
     if (name !== '') {
         // TODO allow textures.minecraft.net link
         const head = await getSkin('https://api.ashcon.app/mojang/v2/user/' + name)
@@ -110,17 +109,8 @@ export function initArmor() {
             const layer2 = new BoxGeometry(1, 1, 1)
             layer2.translate(0, 0.5 * layer2ToLayer1, 0)
             layer2.scale(layer2Scale, layer2Scale, layer2Scale)
-            // TODO create variable for transparent material settings
             // TODO research into semi-transparent textures
-            const layer2Material = new MeshBasicMaterial({
-                color: 0xffffff,
-                map: cubeTexture,
-                transparent: false,
-                alphaTest: 0.5,
-                depthWrite: true,
-                depthTest: true,
-                side: DoubleSide,
-            })
+            const layer2Material = createTransparentMaterial(cubeTexture)
             const layer2Mesh = new Mesh(layer2, layer2Material)
 
             layer1Mesh.add(layer2Mesh)

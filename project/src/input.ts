@@ -437,8 +437,6 @@ if (typeof document.hidden !== 'undefined') {
 document.addEventListener(visibilityChange, handleVisibilityChange, false)
 window.addEventListener('blur', handleVisibilityChange, false)
 function handleVisibilityChange() {
-    console.log('visibility change')
-
     for (const [key, value] of Object.entries(codes)) {
         codes[key] = false
     }
