@@ -15,7 +15,7 @@
 
 import _ from 'lodash'
 
-import { loadModelList } from './model_loader'
+import { initModelLoader, loadModelList } from './model_loader'
 
 import { deselect, highlightedPart, initControls, updateReferences, useControls } from './controls'
 
@@ -48,6 +48,7 @@ async function init() {
     initControls()
     initArmor()
     initInput()
+    initModelLoader()
 
     setFrame(0)
     setTimelineBar(frame)

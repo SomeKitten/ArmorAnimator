@@ -229,6 +229,7 @@ export function getNBTProperty(part: Object3D) {
 }
 
 export function getBlockProperty(part: Object3D) {
+    console.log(tweenedFrameData[frame][part.name]?.block || '')
     return tweenedFrameData[frame][part.name]?.block || ''
 }
 
@@ -242,5 +243,20 @@ export function memoizer(fun: Function) {
             headCache[n] = result
             return result
         }
+    }
+}
+
+// https://stackoverflow.com/questions/3646914/how-do-i-check-if-file-exists-in-jquery-or-pure-javascript
+export async function isUrlFound(url: string) {
+    try {
+        const response = await fetch(url, {
+            method: 'HEAD',
+            cache: 'no-cache',
+        })
+
+        return response.status === 200
+    } catch (error) {
+        // console.log(error);
+        return false
     }
 }

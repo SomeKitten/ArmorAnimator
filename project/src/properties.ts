@@ -225,7 +225,7 @@ export function updateKeyframeValues() {
         if (properties[i].startsWith('rotate') || properties[i].startsWith('translate')) {
             setPropertyNumber(properties[i], getPropertyValue(properties[i]) as number)
         }
-        if (properties[i].startsWith('armor') || properties[i].startsWith('nbt')) {
+        if (properties[i].startsWith('armor') || properties[i].startsWith('nbt') || properties[i].startsWith('block')) {
             setPropertyString(properties[i], getPropertyValue(properties[i]) as string)
         }
     }

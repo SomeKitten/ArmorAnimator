@@ -17,7 +17,7 @@ import { CubesChildren, CubesObject, Frame, FramePart, Json, ModelPart, ModelSha
 import { saveAllToFrame } from './properties'
 import { createTransparentMaterial, textureLoader } from './render'
 import { settings } from './settings'
-import { scene, cubes, getChild, getAllModels } from './util'
+import { scene, cubes, getChild, getAllModels, memoizer, isUrlFound } from './util'
 
 let scaleFactor = 1 / 16
 export let models: string[] = []
@@ -412,18 +412,22 @@ export async function loadModel(p: string, identifier?: string) {
 
 // TODO apply block model and texture
 // TODO memoize this
-export function applyBlock(part: Object3D, block: String) {
-    const texture = textureLoader.load(
-        'textures/block/' + block + '.png',
-        () => {},
-        () => {},
-        (error) => {
-            const sand = textureLoader.load('textures/block/sand.png')
-            sand.minFilter = NearestFilter
-            sand.magFilter = NearestFilter
-            ;((part.children[0] as Mesh).material as MeshBasicMaterial).map = sand
-        },
-    )
+export let blockTexture: Function
+
+export function initModelLoader() {
+    const sand = textureLoader.load('textures/block/sand.png')
+    sand.minFilter = NearestFilter
+    sand.magFilter = NearestFilter
+
+    blockTexture = memoizer(async function (block: string) {
+        return (await isUrlFound('textures/block/' + block + '.png'))
+            ? textureLoader.load('textures/block/' + block + '.png')
+            : sand
+    })
+}
+
+export async function applyBlock(part: Object3D, block: String) {
+    const texture = await blockTexture(block)
 
     texture.minFilter = NearestFilter
     texture.magFilter = NearestFilter
