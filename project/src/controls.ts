@@ -40,15 +40,17 @@ import {
     grid,
     point3D,
 } from './render'
-import { getRootObject, scene, settings, target, targetQ } from './util'
+import { getRootObject, scene, target, targetQ } from './util'
 import _, { floor, round } from 'lodash'
 import { createPropertyInputs, deletePropertyInputs, propertyInputDiv, resetPropertyValues } from './menu'
 import { updateAllKeyframes } from './keyframes'
 import { getHighlightedProperties, updateKeyframeValues } from './properties'
 import { camera, camOrbit } from './camera'
+import { loadSettings } from './settings'
 
 export const raycaster = new Raycaster()
 
+// TODO move to properties.ts and/or merge with settings
 export let canRotateX = false
 export let canRotateY = false
 export let canRotateZ = false
@@ -56,6 +58,7 @@ export let canTranslateX = false
 export let canTranslateY = false
 export let canTranslateZ = false
 export let canWearHelmet = false
+export let canChangeBlock = false
 
 export let snapDistance = 0.25
 export let snapAngle = Math.PI / 4
@@ -93,6 +96,10 @@ export function setCanTranslate(setting: string) {
 
 export function setCanWearArmor(setting: string) {
     canWearHelmet = setting.includes('H')
+}
+
+export function setCanChangeBlock(setting: string) {
+    canChangeBlock = setting.includes('B')
 }
 
 export function resetControls() {
@@ -534,6 +541,7 @@ export function updateReferences() {
 
 export function select(part: Object3D) {
     loadSettings(part)
+    // TODO make this procedural
     while (!(canRotateX || canRotateY || canRotateZ || canTranslateX || canTranslateY || canTranslateZ)) {
         part = part.parent
         loadSettings(part)
@@ -583,66 +591,6 @@ export function deselect() {
     updateKeyframeValues()
 
     propertyInputDiv.childNodes.forEach((child, key, parent) => (child as HTMLElement).blur())
-}
-
-// TODO change the load*Settings() functions into one singular one that uses lodash get() function
-export function loadSettings(part: Object3D) {
-    loadRotateSettings(part)
-    loadTranslateSettings(part)
-    loadArmorSettings(part)
-}
-
-export function loadRotateSettings(part: Object3D) {
-    let entity = part.name.split('|')[0]
-    let partName = part.name.split('|')[2]
-
-    if (
-        settings[entity] !== undefined &&
-        settings[entity].freedom !== undefined &&
-        settings[entity].freedom.rotate !== undefined &&
-        settings[entity].freedom.rotate[partName] !== undefined
-    ) {
-        setCanRotate(settings[entity].freedom.rotate[partName])
-    } else if (settings.general.freedom.rotate[partName] !== undefined) {
-        setCanRotate(settings.general.freedom.rotate[partName])
-    } else {
-        setCanRotate(settings.general.freedom.rotate.general)
-    }
-}
-
-export function loadTranslateSettings(part: Object3D) {
-    let entity = part.name.split('|')[0]
-    let partName = part.name.split('|')[2]
-
-    if (
-        settings[entity] !== undefined &&
-        settings[entity].freedom !== undefined &&
-        settings[entity].freedom.translate !== undefined &&
-        settings[entity].freedom.translate[partName] !== undefined
-    ) {
-        setCanTranslate(settings[entity].freedom.translate[partName])
-    } else if (settings.general.freedom.translate[partName] !== undefined) {
-        setCanTranslate(settings.general.freedom.translate[partName])
-    } else {
-        setCanTranslate(settings.general.freedom.translate.general)
-    }
-}
-
-export function loadArmorSettings(part: Object3D) {
-    let entity = part.name.split('|')[0]
-    let partName = part.name.split('|')[2]
-
-    if (
-        settings[entity] !== undefined &&
-        settings[entity].armor !== undefined &&
-        settings[entity].armor[partName] !== undefined
-    ) {
-        setCanWearArmor(settings[entity].armor[partName])
-    } else if (settings.general.armor[partName] !== undefined) {
-        setCanWearArmor(settings.general.armor[partName])
-    } else {
-        setCanWearArmor(settings.general.armor.general)
-    }
 }
 
 export function resetHighlightedPart() {

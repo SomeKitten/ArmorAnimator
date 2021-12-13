@@ -104,6 +104,12 @@ const tagFunctions = {
     SkullOwner: function (value: string) {
         return `SkullOwner:"${value}"`
     },
+    BlockState: function (value: Tags) {
+        return `BlockState:{${generateNBT(value)}}`
+    },
+    Name: function (value: string) {
+        return `Name:"minecraft:${value}"`
+    },
 }
 
 export function packMeta() {
@@ -170,7 +176,10 @@ function mergeCommandGenerate(frame: number, entityID: string, xyz: number[], ta
     return (
         `execute if score timer animation matches ${frame} run ` +
         `data merge entity @e[tag=${entityID},limit=1] {${generateNBT(tags)}}\n` +
-        (nbtText === '' ? '' : `data merge entity @e[tag=${entityID},limit=1] ${nbtText}\n`) +
+        (nbtText === ''
+            ? ''
+            : `execute if score timer animation matches ${frame} run ` +
+              `data merge entity @e[tag=${entityID},limit=1] ${nbtText}\n`) +
         (xyz === null
             ? ''
             : `execute if score timer animation matches ${frame} run ` +
@@ -324,13 +333,10 @@ function genericSummon(mob: string, frame: number) {
 
     // TODO find more elegant solution to this trash
     let pos = null
-    if (data[mob + '|body'] !== undefined && data[mob + '|body'].translation !== undefined) {
-        pos = data[mob + '|body'].translation
-    }
-    const body =
-        data[mob + '|body'] === undefined || data[mob + '|body'].rotation === undefined
-            ? ''
-            : data[mob + '|body'].rotation
+    pos = data[mob + '|body']?.translation || data[mob + '|block']?.translation
+
+    const body = data[mob + '|body']?.rotation || ''
+
     let head: number[] | '' = ''
     if (data[mob + '|head'] !== undefined) {
         head = data[mob + '|head'].rotation
@@ -357,23 +363,23 @@ function genericSummon(mob: string, frame: number) {
             Tags: [mob.replaceAll(/\|/g, '-'), 'animation'],
             NoGravity: 1,
             Invulnerable: 1,
-            ArmorItems:
-                data[mob + '|head'] === undefined ||
-                data[mob + '|head'].skullowner === undefined ||
-                data[mob + '|head'].skullowner === ''
-                    ? ''
-                    : [
-                          {},
-                          {},
-                          {},
-                          {
-                              id: 'player_head',
-                              Count: 1,
-                              tag: {
-                                  SkullOwner: data[mob + '|head'].skullowner,
-                              },
+            ArmorItems: data[mob + '|head']?.skullowner
+                ? [
+                      {},
+                      {},
+                      {},
+                      {
+                          id: 'player_head',
+                          Count: 1,
+                          tag: {
+                              SkullOwner: data[mob + '|head']?.skullowner,
                           },
-                      ],
+                      },
+                  ]
+                : '',
+            BlockState: {
+                Name: data[mob + '|block']?.block || 'sand',
+            },
         },
         nbtText,
     )
@@ -383,14 +389,10 @@ function genericMerge(mob: string, frame: number) {
     const data = commandFrameData[frame]
     const name = mob.split('|')[0]
 
-    let pos = null
-    if (data[mob + '|body'] !== undefined && data[mob + '|body'].translation !== undefined) {
-        pos = data[mob + '|body'].translation
-    }
-    const body =
-        data[mob + '|body'] === undefined || data[mob + '|body'].rotation === undefined
-            ? ''
-            : data[mob + '|body'].rotation
+    const pos = data[mob + '|body']?.translation || data[mob + '|block']?.translation || null
+
+    const body = data[mob + '|body']?.rotation || ''
+
     let head: number[] | '' = ''
     if (data[mob + '|head'] !== undefined) {
         head = data[mob + '|head'].rotation
@@ -414,23 +416,23 @@ function genericMerge(mob: string, frame: number) {
         pos,
         {
             Rotation: body === '' || head === '' ? '' : [radToDeg(-body[1]), radToDeg(head[0])],
-            ArmorItems:
-                data[mob + '|head'] === undefined ||
-                data[mob + '|head'].skullowner === undefined ||
-                data[mob + '|head'].skullowner === ''
-                    ? ''
-                    : [
-                          {},
-                          {},
-                          {},
-                          {
-                              id: 'player_head',
-                              Count: 1,
-                              tag: {
-                                  SkullOwner: data[mob + '|head'].skullowner,
-                              },
+            ArmorItems: data[mob + '|head']?.skullowner
+                ? [
+                      {},
+                      {},
+                      {},
+                      {
+                          id: 'player_head',
+                          Count: 1,
+                          tag: {
+                              SkullOwner: data[mob + '|head']?.skullowner,
                           },
-                      ],
+                      },
+                  ]
+                : '',
+            BlockState: {
+                Name: data[mob + '|block']?.block || 'sand',
+            },
         },
         nbtText,
     )

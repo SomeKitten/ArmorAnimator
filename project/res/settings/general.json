@@ -14,5 +14,9 @@
             "general": "",
             "body": "XYZ"
         }
+    },
+    "block": {
+        "general": "",
+        "block": "B"
     }
 }

@@ -1,7 +1,6 @@
 import {
     BoxGeometry,
     BufferAttribute,
-    DoubleSide,
     Matrix4,
     Mesh,
     MeshBasicMaterial,
@@ -17,7 +16,8 @@ import { frameData, setFrame } from './frames'
 import { CubesChildren, CubesObject, Frame, FramePart, Json, ModelPart, ModelShape } from './interfaces'
 import { saveAllToFrame } from './properties'
 import { createTransparentMaterial, textureLoader } from './render'
-import { scene, cubes, settings, getChild, getAllModels } from './util'
+import { settings } from './settings'
+import { scene, cubes, getChild, getAllModels } from './util'
 
 let scaleFactor = 1 / 16
 export let models: string[] = []
@@ -79,31 +79,60 @@ export function genBlockUVs(u: number, v: number, x: number, y: number, z: numbe
         [u + z + x + z + x, v - z - y],
     ]
 
-    let uvs_all = []
+    const uvs_all = []
 
-    for (let uv of left) {
+    for (const uv of left) {
         uvs_all.push(uv[0] / texturew)
         uvs_all.push(uv[1] / textureh)
     }
-    for (let uv of right) {
+    for (const uv of right) {
         uvs_all.push(uv[0] / texturew)
         uvs_all.push(uv[1] / textureh)
     }
-    for (let uv of top) {
+    for (const uv of top) {
         uvs_all.push(uv[0] / texturew)
         uvs_all.push(uv[1] / textureh)
     }
-    for (let uv of bottom) {
+    for (const uv of bottom) {
         uvs_all.push(uv[0] / texturew)
         uvs_all.push(uv[1] / textureh)
     }
-    for (let uv of front) {
+    for (const uv of front) {
         uvs_all.push(uv[0] / texturew)
         uvs_all.push(uv[1] / textureh)
     }
-    for (let uv of back) {
+    for (const uv of back) {
         uvs_all.push(uv[0] / texturew)
         uvs_all.push(uv[1] / textureh)
+    }
+
+    for (let i = 0; i < uvs_all.length; i += 8) {
+        while (uvs_all[i] > 1 || uvs_all[i + 2] > 1 || uvs_all[i + 4] > 1 || uvs_all[i + 6] > 1) {
+            uvs_all[i] -= 1
+            uvs_all[i + 2] -= 1
+            uvs_all[i + 4] -= 1
+            uvs_all[i + 6] -= 1
+        }
+
+        while (uvs_all[i + 1] > 1 || uvs_all[i + 3] > 1 || uvs_all[i + 5] > 1 || uvs_all[i + 7] > 1) {
+            uvs_all[i + 1] -= 1
+            uvs_all[i + 3] -= 1
+            uvs_all[i + 5] -= 1
+            uvs_all[i + 7] -= 1
+        }
+
+        while (uvs_all[i] < 0 || uvs_all[i + 2] < 0 || uvs_all[i + 4] < 0 || uvs_all[i + 6] < 0) {
+            uvs_all[i] += 1
+            uvs_all[i + 2] += 1
+            uvs_all[i + 4] += 1
+            uvs_all[i + 6] += 1
+        }
+
+        while (uvs_all[i + 1] < 0 || uvs_all[i + 3] < 0 || uvs_all[i + 5] < 0 || uvs_all[i + 7] < 0) {
+            uvs_all[i + 1] += 1
+            uvs_all[i + 3] += 1
+            uvs_all[i + 5] += 1
+        }
     }
 
     return new BufferAttribute(new Float32Array(uvs_all), 2)
@@ -227,6 +256,7 @@ function skipPart(part: ModelPart) {
 }
 
 // TODO make type for mimodel data
+// TDOO load textures from https://launcher.mojang.com/v1/objects/7e46fb47609401970e2818989fa584fd467cd036/client.jar (or whatever is the latest version JAR on that site)
 async function loadMimodel(currentFrame: Frame, data: Json, identifier?: string) {
     // ? allow only one root element (so legs don't break things on chickens, zombies, and others)
     while ((data.parts as Json[]).length > 1) {
@@ -380,4 +410,22 @@ export async function loadModel(p: string, identifier?: string) {
     modelCount++
 }
 
-// TODO falling blocks
+// TODO apply block model and texture
+// TODO memoize this
+export function applyBlock(part: Object3D, block: String) {
+    const texture = textureLoader.load(
+        'textures/block/' + block + '.png',
+        () => {},
+        () => {},
+        (error) => {
+            const sand = textureLoader.load('textures/block/sand.png')
+            sand.minFilter = NearestFilter
+            sand.magFilter = NearestFilter
+            ;((part.children[0] as Mesh).material as MeshBasicMaterial).map = sand
+        },
+    )
+
+    texture.minFilter = NearestFilter
+    texture.magFilter = NearestFilter
+    ;((part.children[0] as Mesh).material as MeshBasicMaterial).map = texture
+}

@@ -4,13 +4,8 @@
     },
     "freedom": {
         "rotate": {
-            "base": "Y",
-            "body": "XYZ",
-            "head": "XYZ",
-            "left_arm": "XYZ",
-            "left_leg": "XYZ",
-            "right_arm": "XYZ",
-            "right_leg": "XYZ"
+            "general": "XYZ",
+            "base": "Y"
         },
         "translate": {
             "base": "XYZ",

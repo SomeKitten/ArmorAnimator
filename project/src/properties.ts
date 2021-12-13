@@ -2,6 +2,7 @@ import { Object3D } from 'three'
 import { degToRad, radToDeg } from 'three/src/math/MathUtils'
 import { applyHelmet } from './armor'
 import {
+    canChangeBlock,
     canRotateX,
     canRotateY,
     canRotateZ,
@@ -12,10 +13,12 @@ import {
     highlightedPart,
     select,
 } from './controls'
-import { frameAmount, saveHelmet, saveNBT, saveRotation, saveTranslation, setFrameAmount } from './frames'
+import { frameAmount, saveBlock, saveHelmet, saveNBT, saveRotation, saveTranslation, setFrameAmount } from './frames'
 import { CubesObject, FramePart } from './interfaces'
 import { resetPropertyInputOriginals, setPropertyNumber, setPropertyString } from './menu'
+import { applyBlock } from './model_loader'
 import {
+    getBlockProperty,
     getHeadProperty,
     getNBTProperty,
     getRootObject,
@@ -38,6 +41,7 @@ export const propertyNames = {
     projectdesc: 'Project Description',
     frames: '# of Frames',
     nbt: 'Custom NBT',
+    block: 'Block',
 }
 
 export function getHighlightedProperties() {
@@ -66,6 +70,10 @@ export function getHighlightedProperties() {
 
         if (canWearHelmet) {
             properties.push('armorh')
+        }
+
+        if (canChangeBlock) {
+            properties.push('block')
         }
 
         if (highlightedPart.parent === getRootObject(highlightedPart)) {
@@ -103,6 +111,9 @@ export async function previewPropertyValue(property: string, value: number | str
     } else if (typeof value === 'string') {
         if (property === 'armorh') {
             applyHelmet(highlightedPart, value)
+        }
+        if (property === 'block') {
+            applyBlock(highlightedPart, value)
         }
     }
 }
@@ -149,6 +160,9 @@ export function setPropertyValue(f: number, property: string, value: number | st
         if (property === 'nbt') {
             saveNBT(f, highlightedPart, value)
         }
+        if (property === 'block') {
+            saveBlock(f, highlightedPart, value)
+        }
         if (property === 'projectname') {
             setProjectName(value)
         }
@@ -180,11 +194,13 @@ export function getPropertyValue(property: string) {
         return highlightedPart.parent.position.z
     }
     if (property === 'armorh') {
-        const headProperty = getHeadProperty(highlightedPart)
-        return headProperty
+        return getHeadProperty(highlightedPart)
     }
     if (property === 'nbt') {
         return getNBTProperty(highlightedPart)
+    }
+    if (property === 'block') {
+        return getBlockProperty(highlightedPart)
     }
     if (property === 'projectname') {
         return projectName
@@ -225,31 +241,21 @@ export function loadKeyframeValues(part: Object3D, data: FramePart) {
     if (data.skullowner !== undefined) {
         applyHelmet(part, data.skullowner)
     }
+    if (data.block !== undefined) {
+        applyBlock(part, data.block)
+    }
 }
 
 // TODO zombie villager acts funky and errors, figure out why
 export function saveAllToFrame(f: number, root: CubesObject) {
     let part = root.cubes[0].parent
     select(part)
-    // saveTranslation(f, part, [
-    //   part.parent.position.x,
-    //   part.parent.position.y,
-    //   part.parent.position.z,
-    // ]);
-
-    // saveRotation(f, part, [part.rotation.x, part.rotation.y, part.rotation.z]);
-
-    // const nameParts = root.cubes[0].name.split("|");
-    // const head = scene.getObjectByName(`${nameParts[0]}|${nameParts[1]}|head`);
-    // if (canWearArmor[nameParts[0]]) {
-    //   saveHelmet(f, head, getHeadProperty(head));
-    // }
 
     for (const property of getHighlightedProperties()) {
         setPropertyValue(f, property, getPropertyValue(property))
     }
 
-    for (let [, value] of Object.entries(root.children)) {
+    for (const [, value] of Object.entries(root.children)) {
         saveAllToFrame(f, value)
     }
 }

@@ -32,8 +32,6 @@ export let frameSpacing = 100
 export function setFrameAmount(value: number) {
     frameAmount = round(value) > 0 ? round(value) : 1
 
-    console.log(frameAmount)
-
     for (let f = -1; f < frameAmount; f++) {
         if (frameData[f] === undefined) {
             cleanFrames[f] = {}
@@ -309,9 +307,6 @@ export function saveNBT(f: number, part: Object3D, nbt: string) {
     }
 
     let framePart = frameData[f][part.name]
-    if (framePart.nbt === undefined) {
-        framePart.nbt = ''
-    }
 
     framePart.nbt = nbt
 
@@ -321,11 +316,30 @@ export function saveNBT(f: number, part: Object3D, nbt: string) {
         }
 
         let partFramePart = partFrameData[f][part.name]
-        if (partFramePart.nbt === undefined) {
-            partFramePart.nbt = ''
-        }
 
         partFramePart.nbt = nbt
+    }
+
+    updateAllKeyframes()
+}
+
+export function saveBlock(f: number, part: Object3D, block: string) {
+    if (frameData[f][part.name] === undefined) {
+        frameData[f][part.name] = {}
+    }
+
+    let framePart = frameData[f][part.name]
+
+    framePart.block = block
+
+    if (part === highlightedPart) {
+        if (partFrameData[f][part.name] === undefined) {
+            partFrameData[f][part.name] = {}
+        }
+
+        let partFramePart = partFrameData[f][part.name]
+
+        partFramePart.block = block
     }
 
     updateAllKeyframes()

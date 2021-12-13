@@ -19,17 +19,6 @@ export const targetQ = new Quaternion()
 export const targetS = new Spherical()
 export const targetF = new Frustum()
 
-export const settings: Settings = {}
-// const setting = fs.readFileSync(path.resolve(__dirname, 'res', 'settings', 'general.json'))
-// const setting = fs.readFileSync('./settings/general.json')
-// settings.general = JSON.parse(setting.toString())
-// settings.general = JSON.parse('{}')
-fetch('/settings/general.json')
-    .then((res) => res.json())
-    .then((res) => {
-        settings.general = res
-    })
-
 export const scene = new Scene()
 scene.background = new Color(0x008888)
 
@@ -230,23 +219,17 @@ export function cleanNumber(num: string | number, truncate: number) {
     }
 }
 
+// NEXT move to properties.ts
 export function getHeadProperty(part: Object3D) {
-    if (
-        tweenedFrameData[frame][part.name] !== undefined &&
-        tweenedFrameData[frame][part.name].skullowner !== undefined
-    ) {
-        return tweenedFrameData[frame][part.name].skullowner
-    } else {
-        return ''
-    }
+    return tweenedFrameData[frame][part.name]?.skullowner || ''
 }
 
 export function getNBTProperty(part: Object3D) {
-    if (tweenedFrameData[frame][part.name] !== undefined && tweenedFrameData[frame][part.name].nbt !== undefined) {
-        return tweenedFrameData[frame][part.name].nbt
-    } else {
-        return ''
-    }
+    return tweenedFrameData[frame][part.name]?.nbt || ''
+}
+
+export function getBlockProperty(part: Object3D) {
+    return tweenedFrameData[frame][part.name]?.block || ''
 }
 
 // https://scotch.io/tutorials/understanding-memoization-in-javascript

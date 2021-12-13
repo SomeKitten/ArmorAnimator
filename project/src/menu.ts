@@ -15,7 +15,7 @@ import {
     propertyNames,
     setPropertyValue,
 } from './properties'
-import { frame } from './frames'
+import { frame, tweenFrames } from './frames'
 
 const inputHTML = {
     normal: `<input class="property-input-type" type="text">`,
@@ -156,6 +156,9 @@ function onPropertyTypeString(event: Event, property: string) {
     let value = (event.target as HTMLInputElement).value
 
     setPropertyValue(frame, property, value)
+
+    tweenFrames()
+
     setPropertyString(property, getPropertyValue(property) as string)
 }
 
