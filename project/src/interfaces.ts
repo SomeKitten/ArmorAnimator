@@ -1,5 +1,9 @@
 import { Object3D } from 'three'
 
+export type StringObject = { [key: string]: string }
+export type NumberObject = { [key: string]: number }
+export type BooleanObject = { [key: string]: boolean }
+
 export interface FramePart {
     rotation?: number[]
     translation?: number[]
@@ -25,14 +29,10 @@ export interface CubesObject {
     children: CubesChildren
 }
 
-export type ModelList = {
-    [key: string]: string
-}
-
 export type Cubes = {
-    [key: string]: { [key: string]: CubesObject } | Object3D[] | ModelList
     parts: Object3D[]
-    models: ModelList
+    models: StringObject
+    [key: string]: { [key: string]: CubesObject } | Object3D[] | StringObject
 }
 
 export type ModelShape = {
@@ -41,9 +41,7 @@ export type ModelShape = {
     position: number[]
     rotation: number[]
     uv: number[]
-} & {
-    [key: string]: string
-}
+} & StringObject
 
 export interface ModelPart {
     parts: ModelPart[]
@@ -53,27 +51,19 @@ export interface ModelPart {
     name: string
 }
 
-export type Property = {
-    [key: string]: string
-}
-
 export interface Freedom {
-    rotate?: Property
-    translate?: Property
+    rotate?: StringObject
+    translate?: StringObject
 }
 
 export interface Setting {
     freedom?: Freedom
-    armor?: Property
+    armor?: StringObject
 }
 
 export type Settings = {
     [key: string]: Setting | undefined
     general?: Setting
-}
-
-export interface Codes {
-    [key: string]: boolean
 }
 
 export interface Json {

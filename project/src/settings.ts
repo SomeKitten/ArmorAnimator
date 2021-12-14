@@ -1,9 +1,12 @@
 import _ from 'lodash'
 import { Object3D } from 'three'
-import { setCanChangeBlock, setCanRotate, setCanTranslate, setCanWearArmor } from './controls'
+import { highlightedPart, setHighlightedPart } from './controls'
 import { Settings } from './interfaces'
+import { properties } from './properties'
 
 export const settings: Settings = {}
+export let settingsPart: string = ''
+
 fetch('/settings/general.json')
     .then((res) => res.json())
     .then((res) => {
@@ -12,20 +15,35 @@ fetch('/settings/general.json')
 
 // TODO remove intermediate variables "canRotateX"
 export function loadSettings(part: Object3D) {
-    const entity = part.name.split('|')[0]
-    const partName = part.name.split('|')[2]
+    setHighlightedPart(part)
+    settingsPart = part.name
 
-    setCanRotate(getSetting(entity, 'freedom.rotate', partName))
-    setCanTranslate(getSetting(entity, 'freedom.translate', partName))
-    setCanWearArmor(getSetting(entity, 'armor', partName))
-    setCanChangeBlock(getSetting(entity, 'block', partName))
+    console.log(properties.translatex.enabled())
+
+    for (const property in properties) {
+        if (properties[property].enabled()) {
+            console.log(`Loading ${part.name} ${property}`)
+
+            return
+        }
+    }
 }
 
-export function getSetting(entity: string, settingPath: string, partName: string) {
-    return (
-        _.get(settings[entity], settingPath + '.' + partName) ||
-        _.get(settings[entity], settingPath + '.general') ||
-        _.get(settings.general, settingPath + '.' + partName) ||
-        _.get(settings.general, settingPath + '.general')
-    )
+export function getSetting(entity: string, settingPath: string, partName: string): string {
+    const a = _.get(settings[entity], settingPath + '.' + partName)
+    const b = _.get(settings[entity], settingPath + '.general')
+    const c = _.get(settings.general, settingPath + '.' + partName)
+    const d = _.get(settings.general, settingPath + '.general')
+
+    if (a !== undefined) {
+        return a
+    } else if (b !== undefined) {
+        return b
+    } else if (c !== undefined) {
+        return c
+    } else if (d !== undefined) {
+        return d
+    } else {
+        return ''
+    }
 }

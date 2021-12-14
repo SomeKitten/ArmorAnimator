@@ -8,13 +8,7 @@
 import { toNumber } from 'lodash'
 import { cleanNumber, htmlToElement } from './util'
 import { degToRad } from 'three/src/math/MathUtils'
-import {
-    getHighlightedProperties,
-    getPropertyValue,
-    previewPropertyValue,
-    propertyNames,
-    setPropertyValue,
-} from './properties'
+import { getHighlightedProperties, Property } from './properties'
 import { frame, tweenFrames } from './frames'
 
 const inputHTML = {
@@ -36,10 +30,6 @@ const divLabelHTML = {
 
 export const propertyInputDiv: HTMLDivElement = document.getElementById('property-input') as HTMLDivElement
 
-export let propertyInputs: { [key: string]: HTMLInputElement } = {}
-export let propertyInputTexts: { [key: string]: string } = {}
-export let propertyInputOriginals: { [key: string]: number | string } = {}
-
 const truncateNumber = 5
 
 export function resetProperties() {
@@ -47,27 +37,15 @@ export function resetProperties() {
     createPropertyInputs(getHighlightedProperties())
 }
 
-function setPropertyNumberDisplay(property: string, value: string) {
-    propertyInputTexts[property] = cleanNumber(value, truncateNumber) as string
-    propertyInputs[property].value = propertyInputTexts[property]
+export function setPropertyNumber(property: Property, value: number) {
+    property.element.value = cleanNumber(value, truncateNumber) as string
 }
 
-function setPropertyStringDisplay(property: string, value: string) {
-    propertyInputTexts[property] = value
-    propertyInputs[property].value = value
+export function setPropertyString(property: Property, value: string) {
+    property.element.value = value
 }
 
-export function setPropertyNumber(property: string, value: number) {
-    setPropertyNumberDisplay(property, value.toString())
-    propertyInputOriginals[property] = value
-}
-
-export function setPropertyString(property: string, value: string) {
-    setPropertyStringDisplay(property, value)
-    propertyInputOriginals[property] = value
-}
-
-export function createPropertyInputs(properties: string[]) {
+export function createPropertyInputs(properties: Property[]) {
     for (let i = 0; i < properties.length; i++) {
         let inputSelect = 'normal'
         let divLabelSelect = 'normal'
@@ -78,51 +56,42 @@ export function createPropertyInputs(properties: string[]) {
             divLabelSelect = 'bottom'
         }
 
-        propertyInputs[properties[i]] = createPropertyInput(
-            inputHTML[inputSelect],
-            divLabelHTML[divLabelSelect],
-            properties[i],
-            getPropertyValue(properties[i]),
-        )
+        createPropertyInput(inputHTML[inputSelect], divLabelHTML[divLabelSelect], properties[i])
     }
 }
 
-export function createPropertyInput(
-    inputText: string,
-    inputLabel: string,
-    property: string,
-    defaultValue: number | string,
-) {
+export function createPropertyInput(inputText: string, inputLabel: string, property: Property) {
     const propertyInput = htmlToElement(inputText) as HTMLInputElement
     const propertyInputLabel = htmlToElement(inputLabel)
 
-    propertyInputs[property] = propertyInput
-    propertyInputDiv.appendChild(propertyInput)
+    propertyInputLabel.innerHTML = property.displayName
 
-    if (typeof defaultValue === 'number') {
+    property.element = propertyInput
+    propertyInputDiv.appendChild(propertyInput)
+    propertyInputDiv.appendChild(propertyInputLabel)
+
+    if (property.type === 'number') {
         // NEXT drag controls for property input
 
         propertyInput.addEventListener('input', (event) => onPropertyTypeNumber(event, property))
-        if (property === 'frames') {
-            propertyInput.addEventListener('wheel', (event) => onPropertyScrollNumber(event, property, 1 / 100))
+        if (property.displayName === '# of Frames') {
+            // TODO change the calculation to only take into account the sign of the deltaY (to only step the frame count by 1 or -1)
+            propertyInput.addEventListener('wheel', (event) => onPropertyScrollNumber(event, property, 1 / 200))
+        } else if (property.displayName.endsWith('Rotation')) {
+            // TODO change the calculation to only take into account the sign of the deltaY (to only step the frame count by 1 or -1)
+            propertyInput.addEventListener('wheel', (event) => onPropertyScrollNumber(event, property, Math.PI / 180))
         } else {
-            propertyInput.addEventListener('wheel', (event) => onPropertyScrollNumber(event, property))
+            propertyInput.addEventListener('wheel', (event) => onPropertyScrollNumber(event, property, 1 / 4000))
         }
-        setPropertyNumber(property, defaultValue)
+        setPropertyNumber(property, 0)
 
         propertyInput.classList.add('property-input-type-number')
-    } else if (typeof defaultValue === 'string') {
+    } else if (property.type === 'string') {
         propertyInput.addEventListener('input', (event) => onPropertyTypeString(event, property))
-        setPropertyString(property, defaultValue)
+        setPropertyString(property, '')
     }
 
     propertyInput.focus()
-
-    propertyInputDiv.appendChild(propertyInputLabel)
-    const customName = propertyNames[property]
-    propertyInputLabel.innerHTML = customName ? customName : property
-
-    return propertyInput
 }
 
 export function deletePropertyInputs() {
@@ -134,61 +103,41 @@ export function deletePropertyInputs() {
     for (const label of labels) {
         label.remove()
     }
-    propertyInputs = {}
 }
 
-function onPropertyTypeNumber(event: Event, property: string) {
+function onPropertyTypeNumber(event: Event, property: Property) {
     event.preventDefault()
 
     let cleaned = cleanNumber((event.target as HTMLInputElement).value, truncateNumber)
 
     if (cleaned === false) {
-        setPropertyNumberDisplay(property, propertyInputTexts[property])
+        property.element.value = cleanNumber(property.get(), truncateNumber) as string
     } else {
-        setPropertyValue(frame, property, toNumber(cleaned))
-        setPropertyNumber(property, getPropertyValue(property) as number)
+        property.set(frame, toNumber(cleaned))
+        property.preview(toNumber(cleaned))
+        setPropertyNumber(property, property.get() as number)
     }
 }
 
-function onPropertyTypeString(event: Event, property: string) {
+function onPropertyTypeString(event: Event, property: Property) {
     event.preventDefault()
 
     let value = (event.target as HTMLInputElement).value
 
-    setPropertyValue(frame, property, value)
+    property.set(frame, value)
+    property.preview(toNumber(value))
 
     tweenFrames()
 
-    setPropertyString(property, getPropertyValue(property) as string)
+    setPropertyString(property, property.get() as string)
 }
 
-function onPropertyScrollNumber(event: Event, property: string, multiple?: number) {
-    multiple = multiple ? multiple : 1 / 4000
-
+function onPropertyScrollNumber(event: Event, property: Property, multiple: number) {
     let newVal = 0
 
-    if (property.startsWith('rotate')) {
-        newVal = (getPropertyValue(property) as number) - degToRad((event as WheelEvent).deltaY)
-    } else {
-        newVal = (getPropertyValue(property) as number) - (event as WheelEvent).deltaY * multiple
-    }
+    newVal = (property.get() as number) - (event as WheelEvent).deltaY * multiple
 
-    setPropertyValue(frame, property, newVal)
-    setPropertyNumber(property, getPropertyValue(property) as number)
-}
-
-export function resetPropertyValues() {
-    for (const [key, original] of Object.entries(propertyInputOriginals)) {
-        previewPropertyValue(key, original)
-    }
-}
-
-export function setPropertyValues() {
-    for (const [key, original] of Object.entries(propertyInputOriginals)) {
-        setPropertyValue(frame, key, original)
-    }
-}
-
-export function resetPropertyInputOriginals() {
-    propertyInputOriginals = {}
+    property.set(frame, newVal)
+    property.preview(newVal)
+    setPropertyNumber(property, property.get() as number)
 }

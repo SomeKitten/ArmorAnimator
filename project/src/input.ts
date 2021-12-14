@@ -28,7 +28,7 @@ import {
     tweenedFrameData,
     tweenFrames,
 } from './frames'
-import { Codes, FrameData, Json, ModelList } from './interfaces'
+import { BooleanObject, FrameData, Json, StringObject } from './interfaces'
 import { wrap } from './maths'
 import { loadModel, modelCount, models, setModelCount } from './model_loader'
 import { height, renderer, width } from './render'
@@ -53,7 +53,7 @@ export let sensitivity = 0.007
 
 export let camSpeed = 0.1
 
-export let codes: Codes = {}
+export let codes: BooleanObject = {}
 
 export let isMouseDown = false
 export let mouseButton = -1
@@ -135,7 +135,7 @@ async function loadFromJSON(json: Json) {
         }
 
         if (json.models !== undefined) {
-            cubes.models = json.models as ModelList
+            cubes.models = json.models as StringObject
             for (const [key, model] of Object.entries(cubes.models)) {
                 await loadModel(model, key)
             }
@@ -393,6 +393,7 @@ export function onDocumentKeyDown(event: KeyboardEvent) {
     // TODO undo
 
     if (event.code === 'KeyD' && codes.ControlLeft) {
+        event.preventDefault()
         debugLog()
     }
 
@@ -423,14 +424,15 @@ export function onScroll(event: { deltaY: number }) {
 }
 
 let hidden: string, visibilityChange
+type BetterDocument = Document & { msHidden: string; webkitHidden: string }
 if (typeof document.hidden !== 'undefined') {
     // Opera 12.10 and Firefox 18 and later support
     hidden = 'hidden'
     visibilityChange = 'visibilitychange'
-} else if (typeof document.msHidden !== 'undefined') {
+} else if (typeof (document as BetterDocument).msHidden !== 'undefined') {
     hidden = 'msHidden'
     visibilityChange = 'msvisibilitychange'
-} else if (typeof document.webkitHidden !== 'undefined') {
+} else if (typeof (document as BetterDocument).webkitHidden !== 'undefined') {
     hidden = 'webkitHidden'
     visibilityChange = 'webkitvisibilitychange'
 }

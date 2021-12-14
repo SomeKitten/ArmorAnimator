@@ -229,7 +229,6 @@ export function getNBTProperty(part: Object3D) {
 }
 
 export function getBlockProperty(part: Object3D) {
-    console.log(tweenedFrameData[frame][part.name]?.block || '')
     return tweenedFrameData[frame][part.name]?.block || ''
 }
 
@@ -256,7 +255,6 @@ export async function isUrlFound(url: string) {
 
         return response.status === 200
     } catch (error) {
-        // console.log(error);
         return false
     }
 }

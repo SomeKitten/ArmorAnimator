@@ -42,23 +42,13 @@ import {
 } from './render'
 import { getRootObject, scene, target, targetQ } from './util'
 import _, { floor, round } from 'lodash'
-import { createPropertyInputs, deletePropertyInputs, propertyInputDiv, resetPropertyValues } from './menu'
+import { createPropertyInputs, deletePropertyInputs, propertyInputDiv } from './menu'
 import { updateAllKeyframes } from './keyframes'
-import { getHighlightedProperties, updateKeyframeValues } from './properties'
+import { getHighlightedProperties, properties, updateKeyframeValues } from './properties'
 import { camera, camOrbit } from './camera'
-import { loadSettings } from './settings'
+import { loadSettings, settingsPart } from './settings'
 
 export const raycaster = new Raycaster()
-
-// TODO move to properties.ts and/or merge with settings
-export let canRotateX = false
-export let canRotateY = false
-export let canRotateZ = false
-export let canTranslateX = false
-export let canTranslateY = false
-export let canTranslateZ = false
-export let canWearHelmet = false
-export let canChangeBlock = false
 
 export let snapDistance = 0.25
 export let snapAngle = Math.PI / 4
@@ -74,41 +64,26 @@ export let originalCoord = 0
 
 export let highlightedPart: Object3D = null
 
-export function resetRotating() {
-    rotating = ''
+export function setHighlightedPart(part: Object3D) {
+    highlightedPart = part
 }
 
-export function setCanRotate(setting: string) {
-    canRotateX = setting.includes('X')
-    canRotateY = setting.includes('Y')
-    canRotateZ = setting.includes('Z')
+export function resetRotating() {
+    rotating = ''
 }
 
 export function resetTranslating() {
     translating = ''
 }
 
-export function setCanTranslate(setting: string) {
-    canTranslateX = setting.includes('X')
-    canTranslateY = setting.includes('Y')
-    canTranslateZ = setting.includes('Z')
-}
-
-export function setCanWearArmor(setting: string) {
-    canWearHelmet = setting.includes('H')
-}
-
-export function setCanChangeBlock(setting: string) {
-    canChangeBlock = setting.includes('B')
-}
-
 export function resetControls() {
-    canRotateX = false
-    canRotateY = false
-    canRotateZ = false
-    canTranslateX = false
-    canTranslateY = false
-    canTranslateZ = false
+    composer.removePass(xRotateOutline)
+    composer.removePass(yRotateOutline)
+    composer.removePass(zRotateOutline)
+
+    composer.removePass(xTranslateOutline)
+    composer.removePass(yTranslateOutline)
+    composer.removePass(zTranslateOutline)
 }
 
 export function setActualRotation() {
@@ -271,7 +246,7 @@ export function startControls() {
         y = mouse.y - centerCoords.y
     }
 
-    if (highlightedPart !== null && xOuter.length > 0 && xInner.length == 0 && canRotateX) {
+    if (highlightedPart !== null && xOuter.length > 0 && xInner.length == 0 && properties.rotatex.enabled()) {
         rotating = 'x'
 
         if (isFront(xAxisCircle)) {
@@ -279,7 +254,7 @@ export function startControls() {
         } else {
             movementOrigin = actualHighlightedRotation[0] - Math.atan2(x, y)
         }
-    } else if (highlightedPart !== null && yOuter.length > 0 && yInner.length == 0 && canRotateY) {
+    } else if (highlightedPart !== null && yOuter.length > 0 && yInner.length == 0 && properties.rotatey.enabled()) {
         rotating = 'y'
 
         if (isFront(yAxisCircle)) {
@@ -287,7 +262,7 @@ export function startControls() {
         } else {
             movementOrigin = actualHighlightedRotation[1] + Math.atan2(x, y)
         }
-    } else if (highlightedPart !== null && zOuter.length > 0 && zInner.length == 0 && canRotateZ) {
+    } else if (highlightedPart !== null && zOuter.length > 0 && zInner.length == 0 && properties.rotatez.enabled()) {
         rotating = 'z'
 
         if (isFront(zAxisCircle)) {
@@ -295,7 +270,7 @@ export function startControls() {
         } else {
             movementOrigin = actualHighlightedRotation[2] - Math.atan2(x, y)
         }
-    } else if (highlightedPart !== null && xLine.length > 0 && canTranslateX) {
+    } else if (highlightedPart !== null && xLine.length > 0 && properties.translatex.enabled()) {
         translating = 'x'
 
         xAxisLine.updateMatrixWorld()
@@ -311,7 +286,7 @@ export function startControls() {
         movementAngle = getAngle(coords1, coords2)
         movementOrigin = rotateAroundOrigin(mouse, movementAngle).x
         originalCoord = highlightedPart.parent.position.x
-    } else if (highlightedPart !== null && yLine.length > 0 && canTranslateY) {
+    } else if (highlightedPart !== null && yLine.length > 0 && properties.translatey.enabled()) {
         translating = 'y'
 
         yAxisLine.updateMatrixWorld()
@@ -327,7 +302,7 @@ export function startControls() {
         movementAngle = getAngle(coords1, coords2)
         movementOrigin = rotateAroundOrigin(mouse, movementAngle).x
         originalCoord = highlightedPart.parent.position.y
-    } else if (highlightedPart !== null && zLine.length > 0 && canTranslateZ) {
+    } else if (highlightedPart !== null && zLine.length > 0 && properties.translatez.enabled()) {
         translating = 'z'
 
         zAxisLine.updateMatrixWorld()
@@ -541,15 +516,9 @@ export function updateReferences() {
 
 export function select(part: Object3D) {
     loadSettings(part)
-    // TODO make this procedural
-    while (!(canRotateX || canRotateY || canRotateZ || canTranslateX || canTranslateY || canTranslateZ)) {
-        part = part.parent
-        loadSettings(part)
-    }
 
     selectedOutlinePassLine.selectedObjects = []
 
-    highlightedPart = part
     setActualRotation()
 
     selectedOutlinePassLine.selectedObjects = [highlightedPart]
@@ -572,16 +541,7 @@ export function deselect() {
 
     resetControls()
 
-    composer.removePass(xRotateOutline)
-    composer.removePass(yRotateOutline)
-    composer.removePass(zRotateOutline)
-
-    composer.removePass(xTranslateOutline)
-    composer.removePass(yTranslateOutline)
-    composer.removePass(zTranslateOutline)
-
     if (highlightedPart !== null) {
-        resetPropertyValues()
         searchInputElement.focus()
     }
     resetHighlightedPart()
@@ -589,8 +549,6 @@ export function deselect() {
     deletePropertyInputs()
     createPropertyInputs(getHighlightedProperties())
     updateKeyframeValues()
-
-    propertyInputDiv.childNodes.forEach((child, key, parent) => (child as HTMLElement).blur())
 }
 
 export function resetHighlightedPart() {

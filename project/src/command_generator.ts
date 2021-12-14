@@ -4,7 +4,7 @@ import { random, toNumber } from 'lodash'
 import { radToDeg } from 'three/src/math/MathUtils'
 
 import { frameAmount, commandFrameData, tweenFrames, tweenedFrameData } from './frames'
-import { Tags } from './interfaces'
+import { StringObject, Tags } from './interfaces'
 import { radArrToDeg } from './maths'
 import { cleanNumber, cubes, projectDescription, projectName } from './util'
 
@@ -47,7 +47,7 @@ const tagFunctions = {
         return value === '' ? '' : `RightLeg:[${value[0]}f,${-value[1]}f,${-value[2]}f]`
     },
     Pose: function (values: Tags) {
-        const parts = values as { [key: string]: string }
+        const parts = values as StringObject
         return parts.Head === '' &&
             parts.Body === '' &&
             parts.LeftArm === '' &&
@@ -156,8 +156,6 @@ function generateNBT(tags: Tags) {
 }
 
 function summonCommandGenerate(frame: number, entityName: string, xyz: number[], tags: Tags, nbtText: string) {
-    console.log(tags.Tags[0])
-
     randomPrefixes[tags.Tags[0] as string] =
         Math.random()
             .toString(36)

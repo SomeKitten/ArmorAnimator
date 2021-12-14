@@ -23,21 +23,12 @@ import {
     Line,
     Texture,
 } from 'three'
-import {
-    canTranslateX,
-    canTranslateY,
-    canTranslateZ,
-    canRotateX,
-    canRotateY,
-    canRotateZ,
-    raycaster,
-    rotating,
-    translating,
-} from './controls'
+import { raycaster, rotating, translating } from './controls'
 import _ from 'lodash'
 import { mouse, onSceneMouseDown } from './input'
 import { scene } from './util'
 import { camera, insideCamera } from './camera'
+import { properties } from './properties'
 
 export let timelineHeight = 0.25
 export let width = window.innerWidth
@@ -199,8 +190,6 @@ for (let z = 0; z < 16; z++) {
     grid.add(line)
 }
 
-export let highlightedControl = ''
-
 export function resizeWindow() {
     width = window.innerWidth
     height = window.innerHeight * (1 - timelineHeight)
@@ -228,25 +217,25 @@ export function updatePasses() {
     const yLine = raycaster.intersectObject(yAxisClick)
     const zLine = raycaster.intersectObject(zAxisClick)
 
-    let isXRot = xOuter.length > 0 && xInner.length == 0 && canRotateX
-    let isYRot = yOuter.length > 0 && yInner.length == 0 && canRotateY
-    let isZRot = zOuter.length > 0 && zInner.length == 0 && canRotateZ
+    let isXRot = xOuter.length > 0 && xInner.length == 0 && properties.rotatex.enabled()
+    let isYRot = yOuter.length > 0 && yInner.length == 0 && properties.rotatey.enabled()
+    let isZRot = zOuter.length > 0 && zInner.length == 0 && properties.rotatez.enabled()
 
-    if (!canTranslateX) {
+    if (!properties.translatex.enabled()) {
         composer.removePass(xTranslateOutline)
     } else {
         if (!composer.passes.includes(xTranslateOutline)) {
             composer.addPass(xTranslateOutline)
         }
     }
-    if (!canTranslateY) {
+    if (!properties.translatey.enabled()) {
         composer.removePass(yTranslateOutline)
     } else {
         if (!composer.passes.includes(yTranslateOutline)) {
             composer.addPass(yTranslateOutline)
         }
     }
-    if (!canTranslateZ) {
+    if (!properties.translatez.enabled()) {
         composer.removePass(zTranslateOutline)
     } else {
         if (!composer.passes.includes(zTranslateOutline)) {
@@ -254,21 +243,21 @@ export function updatePasses() {
         }
     }
 
-    if (!canRotateX) {
+    if (!properties.rotatex.enabled()) {
         composer.removePass(xRotateOutline)
     } else {
         if (!composer.passes.includes(xRotateOutline)) {
             composer.addPass(xRotateOutline)
         }
     }
-    if (!canRotateY) {
+    if (!properties.rotatey.enabled()) {
         composer.removePass(yRotateOutline)
     } else {
         if (!composer.passes.includes(yRotateOutline)) {
             composer.addPass(yRotateOutline)
         }
     }
-    if (!canRotateZ) {
+    if (!properties.rotatez.enabled()) {
         composer.removePass(zRotateOutline)
     } else {
         if (!composer.passes.includes(zRotateOutline)) {
@@ -285,45 +274,31 @@ export function updatePasses() {
 
     setControlsColour('#ffffff')
 
-    highlightedControl = ''
-
     if (rotating !== 'x' && !isXRot) {
         xRotateOutline.visibleEdgeColor.set('#ff0000')
         xRotateOutline.hiddenEdgeColor.set('#ff0000')
-    } else {
-        highlightedControl = 'rotatex'
     }
     if (rotating !== 'y' && (!isYRot || isXRot)) {
         yRotateOutline.visibleEdgeColor.set('#00ff00')
         yRotateOutline.hiddenEdgeColor.set('#00ff00')
-    } else {
-        highlightedControl = 'rotatey'
     }
     if (rotating !== 'z' && (!isZRot || isXRot || isYRot)) {
         zRotateOutline.visibleEdgeColor.set('#0000ff')
         zRotateOutline.hiddenEdgeColor.set('#0000ff')
-    } else {
-        highlightedControl = 'rotatez'
     }
 
     const isRotate = isXRot || isYRot || isZRot
     if (translating !== 'x' && (xLine.length === 0 || isRotate)) {
         xTranslateOutline.visibleEdgeColor.set('#ff0000')
         xTranslateOutline.hiddenEdgeColor.set('#ff0000')
-    } else {
-        highlightedControl = 'translatex'
     }
     if (translating !== 'y' && (yLine.length === 0 || isRotate || xLine.length > 0)) {
         yTranslateOutline.visibleEdgeColor.set('#00ff00')
         yTranslateOutline.hiddenEdgeColor.set('#00ff00')
-    } else {
-        highlightedControl = 'translatey'
     }
     if (translating !== 'z' && (zLine.length === 0 || isRotate || xLine.length > 0 || yLine.length > 0)) {
         zTranslateOutline.visibleEdgeColor.set('#0000ff')
         zTranslateOutline.hiddenEdgeColor.set('#0000ff')
-    } else {
-        highlightedControl = 'translatez'
     }
 }
 
