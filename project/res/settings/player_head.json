@@ -1,0 +1,10 @@
+{
+    "freedom": {
+        "rotate": {
+            "block": "XYZ"
+        },
+        "translate": {
+            "block": "XYZ"
+        }
+    }
+}

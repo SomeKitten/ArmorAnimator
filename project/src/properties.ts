@@ -280,11 +280,9 @@ export function getHighlightedProperties() {
     return showProperties
 }
 
-// TODO make every value keyframeable
 export function updateKeyframeValues() {
     const showProperties = getHighlightedProperties()
 
-    // TODO introduce property types
     for (const property of showProperties) {
         if (property.type === 'number') {
             setPropertyNumber(property, property.get() as number)
@@ -307,5 +305,21 @@ export function loadKeyframeValues(part: Object3D, data: FramePart) {
     }
     if (data.block !== undefined) {
         applyBlock(part, data.block)
+    }
+}
+
+export function initProperties(part: Object3D) {
+    for (const property in properties) {
+        if (properties[property].enabled()) {
+            if (properties[property].type === 'number') {
+                properties[property].set(-1, properties[property].get() || 0)
+            } else if (properties[property].type === 'string') {
+                properties[property].set(-1, properties[property].get() || '')
+            }
+        }
+    }
+
+    for (const child of part.children) {
+        initProperties(child)
     }
 }

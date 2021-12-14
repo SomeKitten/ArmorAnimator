@@ -9,7 +9,8 @@ import { toNumber } from 'lodash'
 import { cleanNumber, htmlToElement } from './util'
 import { degToRad } from 'three/src/math/MathUtils'
 import { getHighlightedProperties, Property } from './properties'
-import { frame, tweenFrames } from './frames'
+import { frame, frameData, tweenedFrameData, tweenFrames } from './frames'
+import { highlightedPart } from './controls'
 
 const inputHTML = {
     normal: `<input class="property-input-type" type="text">`,
@@ -125,7 +126,7 @@ function onPropertyTypeString(event: Event, property: Property) {
     let value = (event.target as HTMLInputElement).value
 
     property.set(frame, value)
-    property.preview(toNumber(value))
+    property.preview(value)
 
     tweenFrames()
 

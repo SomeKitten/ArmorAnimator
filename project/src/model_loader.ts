@@ -14,6 +14,7 @@ import { select } from './controls'
 import { frameData, setFrame } from './frames'
 
 import { CubesChildren, CubesObject, Frame, FramePart, Json, ModelPart, ModelShape } from './interfaces'
+import { initProperties } from './properties'
 import { createTransparentMaterial, textureLoader } from './render'
 import { settings } from './settings'
 import { scene, cubes, getChild, getAllModels, memoizer, isUrlFound } from './util'
@@ -403,6 +404,7 @@ export async function loadModel(p: string, identifier?: string) {
     root.position.set(camOrbit.x, camOrbit.y, camOrbit.z)
 
     select(root.children[0])
+    initProperties(root.children[0])
 
     modelCount++
 }

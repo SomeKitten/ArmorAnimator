@@ -68,14 +68,8 @@ export function initArmor() {
     getSkin = memoizer(async function (url: string) {
         // TODO fix old opaque hat-layer skins (e.g. Notch), they show up as black
         // ! MAGIC NUMBERS LMAOO (THANKS MOJANG)
-        const blockPixelSize = 1 / 16
-        const layer1Size = 0.074
+        const layer1Size = 0.5938
         const layer2Size = layer1Size * (9 / 8)
-        const blockToLayer1 = layer1Size / blockPixelSize // replace
-        const blockToLayer2 = layer2Size / blockPixelSize // replace
-        const layer2ToLayer1 = layer1Size / layer2Size
-        const layer1Scale = (1 / 2) * blockToLayer1
-        const layer2Scale = (1 / 2) * blockToLayer2
 
         const data = await fetch(url).then((res) => res.json())
 
@@ -102,13 +96,13 @@ export function initArmor() {
             cubeTexture.magFilter = NearestFilter
             const layer1 = new BoxGeometry(1, 1, 1)
             layer1.translate(0, 0.5, 0)
-            layer1.scale(layer1Scale, layer1Scale, layer1Scale)
+            layer1.scale(layer1Size, layer1Size, layer1Size)
             const layer1Material = new MeshBasicMaterial({ map: cubeTexture })
             const layer1Mesh = new Mesh(layer1, layer1Material)
 
             const layer2 = new BoxGeometry(1, 1, 1)
-            layer2.translate(0, 0.5 * layer2ToLayer1, 0)
-            layer2.scale(layer2Scale, layer2Scale, layer2Scale)
+            layer2.translate(0, (0.5 * layer2Size) / 16, 0)
+            layer2.scale(layer2Size, layer2Size, layer2Size)
             // TODO research into semi-transparent textures
             const layer2Material = createTransparentMaterial(cubeTexture)
             const layer2Mesh = new Mesh(layer2, layer2Material)
