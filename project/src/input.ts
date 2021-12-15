@@ -117,6 +117,7 @@ async function loadFromJSON(json: Json) {
         json.projectDescription === undefined ||
         json.modelCount === undefined ||
         json.models === undefined ||
+        json.frameAmount === undefined ||
         json.frameData === undefined
     ) {
         alert('Invalid JSON file')
@@ -142,6 +143,10 @@ async function loadFromJSON(json: Json) {
 
     if (json.modelCount !== undefined) {
         setModelCount(json.modelCount as number)
+    }
+
+    if (json.frameAmount !== undefined) {
+        setFrameAmount(json.frameAmount as number)
     }
 
     if (json.frameData !== undefined) {
@@ -329,6 +334,7 @@ export function onDocumentKeyDown(event: KeyboardEvent) {
                     projectDescription: projectDescription,
                     modelCount: modelCount,
                     models: cubes.models,
+                    frameAmount: frameAmount,
                     frameData: frameData,
                 }),
             ]),
