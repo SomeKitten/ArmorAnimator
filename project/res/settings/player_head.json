@@ -1,10 +1,13 @@
 {
+    "armor": {
+        "player_head": "H"
+    },
     "freedom": {
         "rotate": {
-            "block": "XYZ"
+            "player_head": "XYZ"
         },
         "translate": {
-            "block": "XYZ"
+            "player_head": "XYZ"
         }
     }
 }

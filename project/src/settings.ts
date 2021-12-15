@@ -16,17 +16,18 @@ fetch('/settings/general.json')
 // TODO remove intermediate variables "canRotateX"
 export function loadSettings(part: Object3D) {
     setHighlightedPart(part)
-    settingsPart = part.name
-
-    console.log(properties.translatex.enabled())
 
     for (const property in properties) {
         if (properties[property].enabled()) {
-            console.log(`Loading ${part.name} ${property}`)
-
             return
         }
     }
+
+    loadSettings(part.parent)
+}
+
+export function setSettingsPart(part: string) {
+    settingsPart = part
 }
 
 export function getSetting(entity: string, settingPath: string, partName: string): string {

@@ -1,14 +1,15 @@
 // TODO make seperate timelines for different kinds of movement (x translation, y translation, x rotation, y rotation etc.)
 
 import { clamp, cloneDeep, floor, isEqual, round } from 'lodash'
-import { Object3D } from 'three'
+import { Euler, Object3D, Spherical, Vector3 } from 'three'
 import { highlightedPart } from './controls'
 import { Frame, FrameData } from './interfaces'
 import { wrap } from './maths'
 import { width } from './render'
-import { scene } from './util'
+import { scene, target, targetE, targetS } from './util'
 import { updateAllKeyframes } from './keyframes'
 import { loadKeyframeValues, updateKeyframeValues } from './properties'
+import { adjustHeadPosition } from './player_head'
 
 export let frameData: FrameData = {}
 export let partFrameData: FrameData = {}
@@ -131,6 +132,7 @@ export function tweenProperty(frame: number, partName: string, propertyName: str
             if (commandFrameData[f][partName] === undefined) {
                 commandFrameData[f][partName] = {}
             }
+
             commandFrameData[f][partName][propertyName] = cloneDeep(tweenedFrameData[f][partName][propertyName])
         }
     }
@@ -150,6 +152,8 @@ export function tweenFrames() {
             tweenProperty(-1, partName, propertyName)
         }
     }
+
+    adjustHeadPosition()
 }
 
 export function deleteFramesByName(name: string) {

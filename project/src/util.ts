@@ -1,5 +1,5 @@
-import { Vector3, Quaternion, Spherical, Frustum, Object3D, Scene, Color, Clock } from 'three'
-import { headCache } from './armor'
+import { Vector3, Quaternion, Spherical, Frustum, Object3D, Scene, Color, Clock, Euler } from 'three'
+import { skinCache } from './armor'
 import { updateCamOrbit } from './camera'
 import { deselect, resetHighlightedPart } from './controls'
 import {
@@ -15,6 +15,9 @@ import { Cubes, CubesObject, Settings } from './interfaces'
 import { deletePropertyInputs } from './menu'
 
 export const target = new Vector3()
+export const targetE = new Euler()
+targetE.order = 'ZYX'
+
 export const targetQ = new Quaternion()
 export const targetS = new Spherical()
 export const targetF = new Frustum()
@@ -235,11 +238,11 @@ export function getBlockProperty(part: Object3D) {
 // https://scotch.io/tutorials/understanding-memoization-in-javascript
 export function memoizer(fun: Function) {
     return function (n: any) {
-        if (headCache[n] != undefined) {
-            return headCache[n]
+        if (skinCache[n] != undefined) {
+            return skinCache[n]
         } else {
             let result = fun(n)
-            headCache[n] = result
+            skinCache[n] = result
             return result
         }
     }

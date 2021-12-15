@@ -46,7 +46,7 @@ import { createPropertyInputs, deletePropertyInputs, propertyInputDiv } from './
 import { updateAllKeyframes } from './keyframes'
 import { getHighlightedProperties, properties, updateKeyframeValues } from './properties'
 import { camera, camOrbit } from './camera'
-import { loadSettings, settingsPart } from './settings'
+import { loadSettings, setSettingsPart, settingsPart } from './settings'
 
 export const raycaster = new Raycaster()
 
@@ -66,6 +66,7 @@ export let highlightedPart: Object3D = null
 
 export function setHighlightedPart(part: Object3D) {
     highlightedPart = part
+    setSettingsPart(part.name)
 }
 
 export function resetRotating() {
@@ -321,8 +322,9 @@ export function startControls() {
     }
 }
 
+// TODO fix compatibility with different window ratios
 export function useControls() {
-    if (highlightedPart !== null && document.getElementById('download') === null) {
+    if (highlightedPart !== null) {
         let centerCoords = selectedScreenCoords()
         let x = mouse.x - centerCoords.x
         let y = mouse.y - centerCoords.y

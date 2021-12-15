@@ -4,7 +4,7 @@ import { radToDeg } from 'three/src/math/MathUtils'
 
 export function rotateSpherical(spherical: Spherical, angleX: number, angleY: number) {
     spherical.theta -= angleY
-    spherical.phi = spherical.phi - angleX
+    spherical.phi -= angleX
 }
 
 export function rotateAroundOrigin3D(point: Vector3, angleX: number, angleY: number) {

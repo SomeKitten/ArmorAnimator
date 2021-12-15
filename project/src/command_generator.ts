@@ -181,9 +181,9 @@ function mergeCommandGenerate(frame: number, entityID: string, xyz: number[], ta
         (xyz === null
             ? ''
             : `execute if score timer animation matches ${frame} run ` +
-              `tp @e[tag=${entityID},limit=1] ~${xyz[0] + random(0, 0.01, true)} ~${xyz[1] + random(0, 0.01, true)} ~${
-                  xyz[2] + random(0, 0.01, true)
-              }`)
+              `tp @e[tag=${entityID},limit=1] ~${xyz[0] + random(0, 0.001, true)} ~${
+                  xyz[1] + random(0, 0.001, true)
+              } ~${xyz[2] + random(0, 0.001, true)}`)
         // ? the random is to avoid a bug where the entity teleports to the
         // ? desired location in increments instead of immediately
         // ? this only happens when there are a significant amount of values being animated
@@ -299,10 +299,7 @@ function armorStandMerge(mob: string, frame: number) {
                         ? ''
                         : radArrToDeg(data[mob + '|right_leg'].rotation),
             },
-            Rotation:
-                data[mob + '|base'] === undefined || data[mob + '|base'].rotation === undefined
-                    ? ''
-                    : [radToDeg(data[mob + '|base'].rotation[1]), 0],
+            Rotation: data[mob + '|base']?.rotation === undefined ? '' : [radToDeg(data[mob + '|base'].rotation[1]), 0],
             ArmorItems:
                 data[mob + '|head'] === undefined ||
                 data[mob + '|head'].skullowner === undefined ||
@@ -325,13 +322,60 @@ function armorStandMerge(mob: string, frame: number) {
     )
 }
 
+function playerHeadSummon(mob: string, frame: number) {
+    const data = commandFrameData[frame]
+    const name = mob.split('|')[0]
+
+    // TODO find more elegant solution to this trash
+    const pos = data[mob + '|player_head']?.translation || null
+
+    let nbtText = ''
+    for (const [key, value] of Object.entries(data)) {
+        if (key.startsWith(mob + '|') && value.nbt !== undefined) {
+            nbtText = value.nbt
+            break
+        }
+    }
+
+    let armorItems = [
+        {},
+        {},
+        {},
+        {
+            id: 'player_head',
+            Count: 1,
+            tag: {
+                SkullOwner: data[mob + '|player_head']?.skullowner || '',
+            },
+        },
+    ]
+
+    return summonCommandGenerate(
+        frame,
+        name.replaceAll('player_head', 'armor_stand'),
+        pos,
+        {
+            Tags: [mob.replaceAll(/\|/g, '-'), 'animation'],
+            NoGravity: 1,
+            Invulnerable: 1,
+            ArmorItems: armorItems,
+            Pose: data[mob + '|player_head']
+                ? {
+                      Head: radArrToDeg(data[mob + '|player_head'].rotation),
+                  }
+                : '',
+        },
+        nbtText,
+    )
+}
+
+// TODO seperate out falling_block
 function genericSummon(mob: string, frame: number) {
     const data = commandFrameData[frame]
     const name = mob.split('|')[0]
 
     // TODO find more elegant solution to this trash
-    let pos = null
-    pos = data[mob + '|body']?.translation || data[mob + '|block']?.translation
+    const pos = data[mob + '|body']?.translation || data[mob + '|block']?.translation || null
 
     const body = data[mob + '|body']?.rotation || ''
 
@@ -352,6 +396,22 @@ function genericSummon(mob: string, frame: number) {
         }
     }
 
+    let armorItems: {} | string = ''
+    if (data[mob + '|head']?.skullowner) {
+        armorItems = [
+            {},
+            {},
+            {},
+            {
+                id: 'player_head',
+                Count: 1,
+                tag: {
+                    SkullOwner: data[mob + '|head']?.skullowner,
+                },
+            },
+        ]
+    }
+
     return summonCommandGenerate(
         frame,
         name,
@@ -361,23 +421,42 @@ function genericSummon(mob: string, frame: number) {
             Tags: [mob.replaceAll(/\|/g, '-'), 'animation'],
             NoGravity: 1,
             Invulnerable: 1,
-            ArmorItems: data[mob + '|head']?.skullowner
-                ? [
-                      {},
-                      {},
-                      {},
-                      {
-                          id: 'player_head',
-                          Count: 1,
-                          tag: {
-                              SkullOwner: data[mob + '|head']?.skullowner,
-                          },
-                      },
-                  ]
+            ArmorItems: armorItems,
+            BlockState:
+                data[mob + '|block'] !== undefined
+                    ? {
+                          Name: data[mob + '|block']?.block || 'sand',
+                      }
+                    : '',
+        },
+        nbtText,
+    )
+}
+
+function playerHeadMerge(mob: string, frame: number) {
+    const data = commandFrameData[frame]
+    const name = mob.split('|')[0]
+
+    const pos = data[mob + '|player_head']?.translation || null
+
+    let nbtText = ''
+    for (const [key, value] of Object.entries(data)) {
+        if (key.startsWith(mob + '|') && value.nbt !== undefined) {
+            nbtText = value.nbt
+            break
+        }
+    }
+
+    return mergeCommandGenerate(
+        frame,
+        mob.replaceAll(/\|/g, '-'),
+        pos,
+        {
+            Pose: data[mob + '|player_head']
+                ? {
+                      Head: radArrToDeg(data[mob + '|player_head'].rotation),
+                  }
                 : '',
-            BlockState: {
-                Name: data[mob + '|block']?.block || 'sand',
-            },
         },
         nbtText,
     )
@@ -387,7 +466,11 @@ function genericMerge(mob: string, frame: number) {
     const data = commandFrameData[frame]
     const name = mob.split('|')[0]
 
-    const pos = data[mob + '|body']?.translation || data[mob + '|block']?.translation || null
+    const pos =
+        data[mob + '|body']?.translation ||
+        data[mob + '|block']?.translation ||
+        data[mob + '|player_head']?.translation ||
+        null
 
     const body = data[mob + '|body']?.rotation || ''
 
@@ -439,8 +522,10 @@ function genericMerge(mob: string, frame: number) {
 function generateSummon(mob: string, frame: number) {
     let name = mob.split('|')[0]
     if (name === 'armor_stand') {
-        const test = armorStandSummon(mob, frame)
-        return test
+        return armorStandSummon(mob, frame)
+    }
+    if (name === 'player_head') {
+        return playerHeadSummon(mob, frame)
     } else {
         return genericSummon(mob, frame)
     }
@@ -450,6 +535,9 @@ function generateMerge(mob: string, frame: number) {
     const name = mob.split('|')[0]
     if (name === 'armor_stand') {
         return armorStandMerge(mob, frame)
+    }
+    if (name === 'player_head') {
+        return playerHeadMerge(mob, frame)
     } else {
         return genericMerge(mob, frame)
     }

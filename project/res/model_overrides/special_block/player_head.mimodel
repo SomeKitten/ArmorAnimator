@@ -1,0 +1,25 @@
+{
+	"name": "player_head",
+	"texture": "entity/steve",
+	"texture_size": [ 64, 64 ],
+	"parts": [
+		{
+			"name": "player_head",
+			"position": [ 0, 4.75, 0 ],
+			"shapes": [
+				{
+					"type": "block",
+					"from": [ -4.75, -4.75, -4.75 ],
+					"to": [ 4.75, 4.75, 4.75 ],
+					"uv": [ 0, 0 ]
+				},
+				{
+					"type": "block",
+					"from": [ -5.35, -5.41, -5.35 ],
+					"to": [ 5.35, 5.29, 5.35 ],
+					"uv": [ 0, 0 ]
+				}
+			]
+		}
+	]
+}

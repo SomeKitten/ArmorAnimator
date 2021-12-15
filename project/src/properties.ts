@@ -1,7 +1,7 @@
 import { Object3D } from 'three'
 import { degToRad, radToDeg } from 'three/src/math/MathUtils'
 import { applyHelmet } from './armor'
-import { highlightedPart, select } from './controls'
+import { highlightedPart, select, setHighlightedPart } from './controls'
 import { frameAmount, saveBlock, saveHelmet, saveNBT, saveRotation, saveTranslation, setFrameAmount } from './frames'
 import { CubesObject, FramePart } from './interfaces'
 import { setPropertyNumber, setPropertyString } from './menu'
@@ -309,6 +309,8 @@ export function loadKeyframeValues(part: Object3D, data: FramePart) {
 }
 
 export function initProperties(part: Object3D) {
+    setHighlightedPart(part)
+
     for (const property in properties) {
         if (properties[property].enabled()) {
             if (properties[property].type === 'number') {
@@ -320,6 +322,8 @@ export function initProperties(part: Object3D) {
     }
 
     for (const child of part.children) {
-        initProperties(child)
+        if (child.name.split('|').length === 3) {
+            initProperties(child)
+        }
     }
 }

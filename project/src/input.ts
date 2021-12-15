@@ -96,7 +96,7 @@ document.onmouseup = function (event) {
 
     resetDragKeyframe()
 
-    if (!isMouseDrag && document.getElementById('download') === null) {
+    if (!isMouseDrag) {
         if (event.button === 0) leftClick()
         if (event.button === 2) rightClick()
     }

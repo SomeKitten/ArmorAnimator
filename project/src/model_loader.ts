@@ -378,6 +378,8 @@ async function parseParts(
 }
 
 export async function loadModel(p: string, identifier?: string) {
+    console.log('loading model', p)
+
     let regex = /\,(?=\s*?[\}\]])/g
     let correct = (await (await fetch(p)).text()).replace(regex, '')
 
@@ -397,16 +399,21 @@ export async function loadModel(p: string, identifier?: string) {
         settings[identifier.split('|')[0]] = JSON.parse(settingsText)
     }
 
-    setFrame(0)
-
     const root = scene.getObjectByName(identifier)
+    if (root.name.startsWith('player_head')) {
+        console.log('player head')
+    }
 
     root.position.set(camOrbit.x, camOrbit.y, camOrbit.z)
 
+    initProperties(root)
     select(root.children[0])
-    initProperties(root.children[0])
+
+    setFrame(0)
 
     modelCount++
+
+    console.log('loaded model', p)
 }
 
 // TODO apply block model and texture
