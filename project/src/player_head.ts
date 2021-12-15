@@ -55,9 +55,9 @@ export function adjustHeadPosition() {
                     target.applyEuler(targetE)
                     target.multiplyScalar(size / 2)
 
-                    part.translation[0] = -target.x
-                    part.translation[1] = -target.y
-                    part.translation[2] = -target.z
+                    part.translation[0] += -target.x
+                    part.translation[1] += -target.y
+                    part.translation[2] += -target.z
                 }
             }
         }

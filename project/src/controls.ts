@@ -51,6 +51,10 @@ import { loadSettings, setSettingsPart, settingsPart } from './settings'
 export const raycaster = new Raycaster()
 
 export let snapDistance = 0.25
+
+// for player heads
+export let altSnapDistance = 0.593708 / 4
+
 export let snapAngle = Math.PI / 4
 
 export let actualHighlightedRotation = [0, 0, 0]
@@ -430,6 +434,10 @@ export function useControls() {
                 let temp = highlightedPart.parent.position.x
                 highlightedPart.parent.position.x = round(temp / snapDistance) * snapDistance
             }
+            if (codes.ControlLeft) {
+                let temp = highlightedPart.parent.position.x
+                highlightedPart.parent.position.x = round(temp / altSnapDistance) * altSnapDistance
+            }
         }
         if (translating === 'y') {
             highlightedPart.parent.position.y = originalCoord + delta
@@ -438,6 +446,10 @@ export function useControls() {
                 let temp = highlightedPart.parent.position.y
                 highlightedPart.parent.position.y = round(temp / snapDistance) * snapDistance
             }
+            if (codes.ControlLeft) {
+                let temp = highlightedPart.parent.position.y
+                highlightedPart.parent.position.y = round(temp / altSnapDistance) * altSnapDistance
+            }
         }
         if (translating === 'z') {
             highlightedPart.parent.position.z = originalCoord + delta
@@ -445,6 +457,10 @@ export function useControls() {
             if (codes.ShiftLeft) {
                 let temp = highlightedPart.parent.position.z
                 highlightedPart.parent.position.z = round(temp / snapDistance) * snapDistance
+            }
+            if (codes.ControlLeft) {
+                let temp = highlightedPart.parent.position.z
+                highlightedPart.parent.position.z = round(temp / altSnapDistance) * altSnapDistance
             }
         }
 

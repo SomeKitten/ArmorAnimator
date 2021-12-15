@@ -76,6 +76,9 @@ const tagFunctions = {
     Invulnerable: function (value: number) {
         return `Invulnerable:${value}b`
     },
+    Invisible: function (value: number) {
+        return `Invisible:${value}b`
+    },
     ShowArms: function (value: number) {
         return `ShowArms:${value}b`
     },
@@ -181,9 +184,10 @@ function mergeCommandGenerate(frame: number, entityID: string, xyz: number[], ta
         (xyz === null
             ? ''
             : `execute if score timer animation matches ${frame} run ` +
-              `tp @e[tag=${entityID},limit=1] ~${xyz[0] + random(0, 0.001, true)} ~${
-                  xyz[1] + random(0, 0.001, true)
-              } ~${xyz[2] + random(0, 0.001, true)}`)
+              `tp @e[tag=${entityID},limit=1] ~${cleanNumber(xyz[0] + random(0, 0.000001, true), -1)} ~${cleanNumber(
+                  xyz[1] + random(0, 0.000001, true),
+                  -1,
+              )} ~${cleanNumber(xyz[2] + random(0, 0.000001, true), -1)}`)
         // ? the random is to avoid a bug where the entity teleports to the
         // ? desired location in increments instead of immediately
         // ? this only happens when there are a significant amount of values being animated
@@ -358,6 +362,7 @@ function playerHeadSummon(mob: string, frame: number) {
             Tags: [mob.replaceAll(/\|/g, '-'), 'animation'],
             NoGravity: 1,
             Invulnerable: 1,
+            Invisible: 1,
             ArmorItems: armorItems,
             Pose: data[mob + '|player_head']
                 ? {
