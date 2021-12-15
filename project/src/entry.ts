@@ -55,7 +55,7 @@ async function init() {
 
     searchElement.addEventListener('submit', onSearch)
     searchElement.addEventListener('input', onSearchType)
-    document.getElementById('search-input').focus()
+    searchInputElement.focus()
 
     loadModelList()
 

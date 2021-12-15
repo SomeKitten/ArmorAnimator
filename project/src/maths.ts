@@ -17,8 +17,12 @@ export function rotateAroundOrigin3D(point: Vector3, angleX: number, angleY: num
 }
 
 export function wrap(num: number, min: number, max: number) {
-    if (num < min) num = max
-    if (num > max) num = min
+    const dist = max - min
+
+    if (dist <= 0) return min
+
+    while (num < min) num = num + dist
+    while (num > max) num = num - dist
     return num
 }
 

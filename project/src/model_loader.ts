@@ -12,6 +12,7 @@ import {
 import { camOrbit } from './camera'
 import { select } from './controls'
 import { frameData, setFrame } from './frames'
+import { searchInputElement, updateSearch } from './input'
 
 import { CubesChildren, CubesObject, Frame, FramePart, Json, ModelPart, ModelShape } from './interfaces'
 import { initProperties } from './properties'
@@ -412,6 +413,9 @@ export async function loadModel(p: string, identifier?: string) {
     setFrame(0)
 
     modelCount++
+
+    searchInputElement.blur()
+    updateSearch('')
 
     console.log('loaded model', p)
 }

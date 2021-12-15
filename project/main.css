@@ -197,3 +197,7 @@ input {
     position: absolute;
     image-rendering: pixelated;
 }
+
+#search-results {
+    display: none;
+}

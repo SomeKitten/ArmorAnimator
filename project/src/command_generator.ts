@@ -73,6 +73,9 @@ const tagFunctions = {
     NoGravity: function (value: number) {
         return `NoGravity:${value}b`
     },
+    NoAI: function (value: number) {
+        return `NoAI:${value}b`
+    },
     Invulnerable: function (value: number) {
         return `Invulnerable:${value}b`
     },
@@ -425,6 +428,7 @@ function genericSummon(mob: string, frame: number) {
             Rotation: body === '' || head === '' ? '' : [radToDeg(-body[1]), radToDeg(head[0])],
             Tags: [mob.replaceAll(/\|/g, '-'), 'animation'],
             NoGravity: 1,
+            NoAI: 1,
             Invulnerable: 1,
             ArmorItems: armorItems,
             BlockState:

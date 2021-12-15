@@ -62,14 +62,12 @@ export let isMouseDrag = false
 export let searchPreview: string[] = []
 export let searchSelection = 0
 export const searchElement = document.getElementById('search')
-export const searchInputElement: HTMLInputElement = document.getElementById('search-input') as HTMLInputElement
+export const searchInputElement = document.getElementById('search-input') as HTMLInputElement
+let searchResults: HTMLUListElement = document.getElementById('search-results') as HTMLUListElement
 
 searchInputElement.onblur = function () {
-    // updateSearch("");
-
-    if (document.getElementById('search-results') !== null) {
-        document.getElementById('search-results').remove()
-    }
+    searchResults.style.display = 'none'
+    searchResults.innerHTML = ''
 }
 
 searchInputElement.onfocus = function () {
@@ -123,34 +121,34 @@ async function loadFromJSON(json: Json) {
     ) {
         alert('Invalid JSON file')
         return
-    } else {
-        deleteAll()
-
-        if (json.projectName !== undefined) {
-            setProjectName(json.projectName as string)
-        }
-
-        if (json.projectDescription !== undefined) {
-            setProjectDescription(json.projectDescription as string)
-        }
-
-        if (json.models !== undefined) {
-            cubes.models = json.models as StringObject
-            for (const [key, model] of Object.entries(cubes.models)) {
-                await loadModel(model, key)
-            }
-        }
-
-        if (json.modelCount !== undefined) {
-            setModelCount(json.modelCount as number)
-        }
-
-        if (json.frameData !== undefined) {
-            setFrameData(json.frameData as FrameData)
-        }
-
-        setFrame(0)
     }
+
+    deleteAll()
+
+    if (json.projectName !== undefined) {
+        setProjectName(json.projectName as string)
+    }
+
+    if (json.projectDescription !== undefined) {
+        setProjectDescription(json.projectDescription as string)
+    }
+
+    if (json.models !== undefined) {
+        cubes.models = json.models as StringObject
+        for (const [key, model] of Object.entries(cubes.models)) {
+            await loadModel(model, key)
+        }
+    }
+
+    if (json.modelCount !== undefined) {
+        setModelCount(json.modelCount as number)
+    }
+
+    if (json.frameData !== undefined) {
+        setFrameData(json.frameData as FrameData)
+    }
+
+    setFrame(0)
 }
 
 export function leftClick() {
@@ -183,11 +181,9 @@ export function onSceneMouseDown(event: MouseEvent) {
 export function onSearch(event: Event) {
     event.preventDefault()
 
-    if (loadModel(searchPreview[searchSelection])) {
-        document.getElementById('search-input').blur()
+    if (searchResults.children.length > 0) {
+        loadModel(searchPreview[searchSelection])
     }
-
-    updateSearch('')
 }
 
 export function onSearchType(event: Event) {
@@ -201,15 +197,6 @@ function addSearchResult(f: string, pending: string) {
     let filename = f.replace(/^.*[\\\/]/, '').slice(0, -8)
 
     if (filename.includes(pending)) {
-        let searchResults = null
-        if (document.getElementById('search-results') === null) {
-            searchResults = document.createElement('ul')
-            searchResults.id = 'search-results'
-            searchElement.appendChild(searchResults)
-        } else {
-            searchResults = document.getElementById('search-results')
-        }
-
         let number = searchResults.children.length
         let listElement = document.createElement('li')
         listElement.addEventListener('mouseover', () => setSearchSelection(number))
@@ -221,26 +208,12 @@ function addSearchResult(f: string, pending: string) {
 }
 
 function generateSearchResults(pending: string) {
-    let searchResults = null
-    for (let f of models) {
-        if (searchResults === null && document.getElementById('search-results') !== null) {
-            searchResults = document.getElementById('search-results')
-        }
+    searchResults.innerHTML = ''
 
+    for (let f of models) {
         const exactMatch = f.replace(/^.*[\\\/]/, '').slice(0, -8) === pending
 
         if (exactMatch && searchPreview.length !== 0) {
-            let searchResults = null
-            if (document.getElementById('search-results') === null) {
-                // TODO use hidden attribute instead of removing and creating it
-                // TODO put searchResults in variable
-                searchResults = document.createElement('ul')
-                searchResults.id = 'search-results'
-                searchElement.appendChild(searchResults)
-            } else {
-                searchResults = document.getElementById('search-results')
-            }
-
             let number = searchResults.children.length
             if (number < 5) {
                 let listElement = document.createElement('li')
@@ -263,7 +236,7 @@ function generateSearchResults(pending: string) {
                 searchPreview[0] = f
             }
         } else {
-            if (searchResults === null || searchResults.children.length < 5) {
+            if (searchResults.children.length < 5) {
                 addSearchResult(f, pending)
             }
         }
@@ -275,17 +248,13 @@ export function resetSearchSelection() {
 }
 
 export function setSearchSelection(value: number) {
-    const searchResults = document.getElementById('search-results')
-
-    if (searchResults !== null) {
-        if (searchResults.children[searchSelection] !== undefined) {
-            searchResults.children[searchSelection].classList.remove('hover-search')
-        }
-
-        searchSelection = wrap(value, 0, searchResults.children.length - 1)
-
-        searchResults.children[searchSelection].classList.add('hover-search')
+    if (searchResults.children[searchSelection] !== undefined) {
+        searchResults.children[searchSelection].classList.remove('hover-search')
     }
+
+    searchSelection = wrap(value, 0, searchResults.children.length - 1)
+
+    searchResults.children[searchSelection].classList.add('hover-search')
 }
 
 export function setSearchPreview(val: string[]) {
@@ -301,17 +270,20 @@ export function updateSearch(pending: string) {
 
     pending = pending.toLowerCase().replace(/ /g, '_')
 
-    if (document.getElementById('search-results') !== null) {
-        document.getElementById('search-results').remove()
-    }
-
     setSearchPreview([])
 
     if (pending !== '') {
         generateSearchResults(pending)
+    } else {
+        searchResults.innerHTML = ''
     }
 
-    setSearchSelection(0)
+    if (searchResults.children.length > 0) {
+        searchResults.style.display = 'inline-block'
+        setSearchSelection(0)
+    } else {
+        searchResults.style.display = 'none'
+    }
 }
 
 // NEXT copy/paste
