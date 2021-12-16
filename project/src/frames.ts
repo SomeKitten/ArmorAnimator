@@ -1,15 +1,15 @@
 // TODO make seperate timelines for different kinds of movement (x translation, y translation, x rotation, y rotation etc.)
 
 import { clamp, cloneDeep, floor, isEqual, round } from 'lodash'
-import { Euler, Object3D, Spherical, Vector3 } from 'three'
+import { Object3D } from 'three'
 import { highlightedPart } from './controls'
 import { Frame, FrameData } from './interfaces'
 import { wrap } from './maths'
 import { width } from './render'
-import { scene, target, targetE, targetS } from './util'
+import { scene } from './util'
 import { updateAllKeyframes } from './keyframes'
 import { loadKeyframeValues, updateKeyframeValues } from './properties'
-import { adjustHeadPosition } from './player_head'
+import { adjustHead } from './player_head'
 
 export let frameData: FrameData = {}
 export let partFrameData: FrameData = {}
@@ -93,9 +93,7 @@ export function findNextPropertyFrame(frame: number, partName: string, propertyN
 }
 
 export function tween(propertyStart: number[] | string, propertyEnd: number[] | string, amount: number) {
-    if (typeof propertyStart === 'string' && typeof propertyEnd === 'string') {
-        return propertyStart
-    } else if (typeof propertyStart[0] === 'number' && typeof propertyEnd[0] === 'number') {
+    if (typeof propertyStart[0] === 'number' && typeof propertyEnd[0] === 'number') {
         propertyStart = propertyStart as number[]
         propertyEnd = propertyEnd as number[]
         let distance = [
@@ -105,6 +103,8 @@ export function tween(propertyStart: number[] | string, propertyEnd: number[] | 
         ]
 
         return [propertyStart[0] + distance[0], propertyStart[1] + distance[1], propertyStart[2] + distance[2]]
+    } else {
+        return propertyStart
     }
 }
 
@@ -153,7 +153,7 @@ export function tweenFrames() {
         }
     }
 
-    adjustHeadPosition()
+    adjustHead()
 }
 
 export function deleteFramesByName(name: string) {

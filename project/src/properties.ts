@@ -1,11 +1,11 @@
 import { Object3D } from 'three'
 import { degToRad, radToDeg } from 'three/src/math/MathUtils'
-import { applyHelmet } from './armor'
-import { highlightedPart, select, setHighlightedPart } from './controls'
+import { highlightedPart, setHighlightedPart } from './controls'
 import { frameAmount, saveBlock, saveHelmet, saveNBT, saveRotation, saveTranslation, setFrameAmount } from './frames'
-import { CubesObject, FramePart } from './interfaces'
+import { FramePart } from './interfaces'
 import { setPropertyNumber, setPropertyString } from './menu'
 import { applyBlock } from './model_loader'
+import { applyHelmet } from './player_head'
 import { getSetting, settingsPart } from './settings'
 import {
     getBlockProperty,
@@ -301,7 +301,7 @@ export function loadKeyframeValues(part: Object3D, data: FramePart) {
         part.rotation.set(data.rotation[0], data.rotation[1], data.rotation[2])
     }
     if (data.skullowner !== undefined) {
-        applyHelmet(part, data.skullowner)
+        applyHelmet(part, data.skullowner as string)
     }
     if (data.block !== undefined) {
         applyBlock(part, data.block)

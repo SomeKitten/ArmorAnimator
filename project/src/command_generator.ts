@@ -107,8 +107,20 @@ const tagFunctions = {
     Count: function (value: number) {
         return `Count:${value}b`
     },
-    SkullOwner: function (value: string) {
-        return `SkullOwner:"${value}"`
+    SkullOwner: function (value: string | Tags) {
+        return typeof value === 'string' ? `SkullOwner:"${value}"` : `SkullOwner:{${generateNBT(value)}}`
+    },
+    Id: function (value: string) {
+        return `Id:${value}`
+    },
+    Properties: function (values: Tags) {
+        return `Properties:{${generateNBT(values)}}`
+    },
+    textures: function (values: Tags[]) {
+        return `textures:[{${generateNBT(values[0])}}]`
+    },
+    Value: function (value: number) {
+        return `Value:"${value}"`
     },
     BlockState: function (value: Tags) {
         return `BlockState:{${generateNBT(value)}}`
@@ -162,12 +174,12 @@ function generateNBT(tags: Tags) {
 }
 
 function summonCommandGenerate(frame: number, entityName: string, xyz: number[], tags: Tags, nbtText: string) {
-    randomPrefixes[tags.Tags[0] as string] =
+    randomPrefixes[tags['Tags'][0] as string] =
         Math.random()
             .toString(36)
             .replaceAll(/[^a-z]+/g, '')
             .slice(0, 5) + '-'
-    tags.Tags[0] = randomPrefixes[tags.Tags[0] as string] + tags.Tags[0]
+    tags['Tags'][0] = randomPrefixes[tags['Tags'][0] as string] + tags['Tags'][0]
     return (
         `execute if score timer animation matches ${frame} run ` +
         `summon minecraft:${entityName} ~${xyz[0]} ~${xyz[1]} ~${xyz[2]} {${generateNBT(tags)}` +
@@ -248,22 +260,22 @@ function armorStandSummon(mob: string, frame: number) {
             Marker: 1,
             NoBasePlate: 1,
             ArmorItems:
-                data[mob + '|head'] === undefined ||
-                data[mob + '|head'].skullowner === undefined ||
-                data[mob + '|head'].skullowner === ''
-                    ? ''
-                    : [
+                data[mob + '|head']?.skullowner !== undefined
+                    ? [
                           {},
                           {},
                           {},
-                          {
-                              id: 'player_head',
-                              Count: 1,
-                              tag: {
-                                  SkullOwner: data[mob + '|head'].skullowner,
-                              },
-                          },
-                      ],
+                          data[mob + '|head']?.skullowner !== ''
+                              ? {
+                                    id: 'player_head',
+                                    Count: 1,
+                                    tag: {
+                                        SkullOwner: data[mob + '|head']?.skullowner,
+                                    },
+                                }
+                              : {},
+                      ]
+                    : '',
         },
         data[mob + '|base'].nbt,
     )
@@ -308,22 +320,22 @@ function armorStandMerge(mob: string, frame: number) {
             },
             Rotation: data[mob + '|base']?.rotation === undefined ? '' : [radToDeg(data[mob + '|base'].rotation[1]), 0],
             ArmorItems:
-                data[mob + '|head'] === undefined ||
-                data[mob + '|head'].skullowner === undefined ||
-                data[mob + '|head'].skullowner === ''
-                    ? ''
-                    : [
+                data[mob + '|head']?.skullowner !== undefined
+                    ? [
                           {},
                           {},
                           {},
-                          {
-                              id: 'player_head',
-                              Count: 1,
-                              tag: {
-                                  SkullOwner: data[mob + '|head'].skullowner,
-                              },
-                          },
-                      ],
+                          data[mob + '|head']?.skullowner !== ''
+                              ? {
+                                    id: 'player_head',
+                                    Count: 1,
+                                    tag: {
+                                        SkullOwner: data[mob + '|head']?.skullowner,
+                                    },
+                                }
+                              : '',
+                      ]
+                    : '',
         },
         tweenedData[mob + '|base'].nbt,
     )
@@ -405,20 +417,23 @@ function genericSummon(mob: string, frame: number) {
     }
 
     let armorItems: {} | string = ''
-    if (data[mob + '|head']?.skullowner) {
-        armorItems = [
-            {},
-            {},
-            {},
-            {
-                id: 'player_head',
-                Count: 1,
-                tag: {
-                    SkullOwner: data[mob + '|head']?.skullowner,
-                },
-            },
-        ]
-    }
+    armorItems =
+        data[mob + '|head']?.skullowner !== undefined
+            ? [
+                  {},
+                  {},
+                  {},
+                  data[mob + '|head']?.skullowner !== ''
+                      ? {
+                            id: 'player_head',
+                            Count: 1,
+                            tag: {
+                                SkullOwner: data[mob + '|head']?.skullowner,
+                            },
+                        }
+                      : {},
+              ]
+            : ''
 
     return summonCommandGenerate(
         frame,
@@ -505,21 +520,24 @@ function genericMerge(mob: string, frame: number) {
         mob.replaceAll(/\|/g, '-'),
         pos,
         {
-            Rotation: body === '' || head === '' ? '' : [radToDeg(-body[1]), radToDeg(head[0])],
-            ArmorItems: data[mob + '|head']?.skullowner
-                ? [
-                      {},
-                      {},
-                      {},
-                      {
-                          id: 'player_head',
-                          Count: 1,
-                          tag: {
-                              SkullOwner: data[mob + '|head']?.skullowner,
-                          },
-                      },
-                  ]
-                : '',
+            Rotation: [radToDeg(-body[1]) || '', typeof head === 'object' ? radToDeg(head[0]) : ''],
+            ArmorItems:
+                data[mob + '|head']?.skullowner !== undefined
+                    ? [
+                          {},
+                          {},
+                          {},
+                          data[mob + '|head']?.skullowner !== ''
+                              ? {
+                                    id: 'player_head',
+                                    Count: 1,
+                                    tag: {
+                                        SkullOwner: data[mob + '|head']?.skullowner,
+                                    },
+                                }
+                              : '',
+                      ]
+                    : '',
             BlockState: {
                 Name: data[mob + '|block']?.block || 'sand',
             },

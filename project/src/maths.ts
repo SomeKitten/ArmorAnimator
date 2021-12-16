@@ -21,8 +21,8 @@ export function wrap(num: number, min: number, max: number) {
 
     if (dist <= 0) return min
 
-    while (num < min) num = num + dist
-    while (num > max) num = num - dist
+    while (num < min) num = num + dist + 1
+    while (num > max) num = num - dist - 1
     return num
 }
 

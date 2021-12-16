@@ -1,5 +1,4 @@
 import { Vector3, Quaternion, Spherical, Frustum, Object3D, Scene, Color, Clock, Euler } from 'three'
-import { skinCache } from './armor'
 import { updateCamOrbit } from './camera'
 import { deselect, resetHighlightedPart } from './controls'
 import {
@@ -237,12 +236,14 @@ export function getBlockProperty(part: Object3D) {
 
 // https://scotch.io/tutorials/understanding-memoization-in-javascript
 export function memoizer(fun: Function) {
+    const cache: { [key: string | number | symbol]: any } = {}
+
     return function (n: any) {
-        if (skinCache[n] != undefined) {
-            return skinCache[n]
+        if (cache[n] != undefined) {
+            return cache[n]
         } else {
             let result = fun(n)
-            skinCache[n] = result
+            cache[n] = result
             return result
         }
     }

@@ -73,7 +73,8 @@ export function createTransparentMaterial(map: Texture) {
     })
 }
 
-export let transparentMaterial = createTransparentMaterial(new TextureLoader().load('images/transparent.png'))
+export const transparentTexture = new TextureLoader().load('images/transparent.png')
+export const transparentMaterial = createTransparentMaterial(transparentTexture)
 
 export let whiteMaterial = new MeshBasicMaterial({
     color: 0xffffff,

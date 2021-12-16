@@ -395,9 +395,12 @@ export async function loadModel(p: string, identifier?: string) {
     const splitted = p.split('/')
     const name = splitted[splitted.length - 1].slice(0, -8)
 
-    const settingsText = await (await fetch('/settings/' + name + '.json')).text()
-    if (settingsText !== '') {
-        settings[identifier.split('|')[0]] = JSON.parse(settingsText)
+    const settingPath = '/settings/' + name + '.json'
+    if (await isUrlFound(settingPath)) {
+        const settingsText = await (await fetch(settingPath)).text()
+        if (settingsText !== '') {
+            settings[identifier.split('|')[0]] = JSON.parse(settingsText)
+        }
     }
 
     const root = scene.getObjectByName(identifier)

@@ -7,7 +7,7 @@ export type BooleanObject = { [key: string]: boolean }
 export interface FramePart {
     rotation?: number[]
     translation?: number[]
-    skullowner?: string
+    skullowner?: string | Tags
     nbt?: string
     block?: string
 }
@@ -71,6 +71,9 @@ export interface Json {
 }
 interface JsonArray extends Array<string | number | boolean | Date | Json | JsonArray> {}
 
-export interface Tags {
-    [key: string]: string | string[] | number | number[] | Tags | Tags[]
-}
+export type Tags =
+    | {
+          [key: string]: string | string[] | number | number[] | Tags | Tags[]
+      }
+    | string
+    | number

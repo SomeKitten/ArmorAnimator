@@ -11,7 +11,7 @@
     "scripts": {
         "dev": "vite",
         "build": "vite build --emptyOutDir",
-        "serve": "vite preview"
+        "serve": "vite preview --host --port 25565"
     },
     "dependencies": {
         "chokidar": "^3.5.2",
