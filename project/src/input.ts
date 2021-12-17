@@ -49,6 +49,7 @@ import { debugLog } from './debug'
 import saveAs from 'file-saver'
 
 export const mouse = new Vector2()
+export const pMouse = new Vector2()
 export let sensitivity = 0.007
 
 export let camSpeed = 0.1
@@ -448,6 +449,10 @@ document.addEventListener('mousemove', onMouseMove)
 export function onMouseMove(event: MouseEvent) {
     mouse.x = (event.clientX / width) * 2 - 1
     mouse.y = -(event.clientY / height) * 2 + 1
+
+    // proportional mouse
+    pMouse.x = (event.clientX / height) * 2 - 1
+    pMouse.y = -(event.clientY / height) * 2 + 1
 
     if (!moveTimelineBar) {
         if (isMouseDown && rotating === '' && translating === '') {

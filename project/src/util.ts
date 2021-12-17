@@ -262,3 +262,12 @@ export async function isUrlFound(url: string) {
         return false
     }
 }
+
+export async function getDataURL(url: string) {
+    const blob = await fetch(url).then((r) => r.blob())
+    return await new Promise((resolve) => {
+        const reader = new FileReader()
+        reader.onload = () => resolve(reader.result)
+        reader.readAsDataURL(blob)
+    })
+}

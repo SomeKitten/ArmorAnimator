@@ -2,7 +2,7 @@ import { BoxGeometry, Mesh, MeshBasicMaterial, NearestFilter, Object3D, Texture 
 import { commandFrameData, frameAmount } from './frames'
 import { genBlockUVs } from './model_loader'
 import { createTransparentMaterial, transparentTexture } from './render'
-import { cubes, isUrlFound, memoizer, target, targetE } from './util'
+import { cubes, getDataURL, isUrlFound, memoizer, target, targetE } from './util'
 
 export const headSize = 0.5938
 
@@ -28,8 +28,8 @@ export async function updateSkin(part: Object3D, name: string) {
         child.name = part.name + '|player_head_overlay'
         child.material = createTransparentMaterial(texture)
         child.geometry = new BoxGeometry(headSize, headSize, headSize)
-        child.geometry.translate(0, headSize / 2, 0)
         child.geometry.scale(9 / 8, 9 / 8, 9 / 8)
+        child.geometry.translate(0, headSize / 2, 0)
 
         part.add(child)
         cubes.parts.push(child)
@@ -139,62 +139,8 @@ export async function applyHelmet(part: Object3D, name: string) {
     updateSkin(part, name)
 }
 
-export let getHeadSkin = memoizer(async function (name: string) {
-    if (name !== '') {
-        // TODO allow textures.minecraft.net link
-        const skin = await getSkin(name)
-
-        // TODO fix old opaque hat-layer skins (e.g. Notch), they show up as black
-        // ! MAGIC NUMBERS LMAOO (THANKS MOJANG)
-        const layer1Size = headSize
-        const layer2Size = layer1Size * (9 / 8)
-
-        let cubeTexture = new Texture()
-        cubeTexture.image = new Image()
-        cubeTexture.image.src = skin
-
-        cubeTexture.minFilter = NearestFilter
-        cubeTexture.magFilter = NearestFilter
-        const layer1 = new BoxGeometry(1, 1, 1)
-        layer1.translate(0, 0.5, 0)
-        layer1.scale(layer1Size, layer1Size, layer1Size)
-        const layer1Material = new MeshBasicMaterial({ map: cubeTexture })
-        const layer1Mesh = new Mesh(layer1, layer1Material)
-
-        const layer2 = new BoxGeometry(1, 1, 1)
-        layer2.scale(layer2Size, layer2Size, layer2Size)
-        layer2.translate(0, layer1Size / 2, 0)
-        // TODO research into semi-transparent textures
-        const layer2Material = createTransparentMaterial(cubeTexture)
-        const layer2Mesh = new Mesh(layer2, layer2Material)
-
-        layer1Mesh.add(layer2Mesh)
-
-        if (cubeTexture.image.complete) {
-            cubeTexture.needsUpdate = true
-
-            layer1.setAttribute('uv', genBlockUVs(0, cubeTexture.image.height, 8, 8, 8, 64, cubeTexture.image.height))
-            layer2.setAttribute('uv', genBlockUVs(32, cubeTexture.image.height, 8, 8, 8, 64, cubeTexture.image.height))
-        } else {
-            cubeTexture.image.onload = function () {
-                cubeTexture.needsUpdate = true
-
-                layer1.setAttribute(
-                    'uv',
-                    genBlockUVs(0, cubeTexture.image.height, 8, 8, 8, 64, cubeTexture.image.height),
-                )
-                layer2.setAttribute(
-                    'uv',
-                    genBlockUVs(32, cubeTexture.image.height, 8, 8, 8, 64, cubeTexture.image.height),
-                )
-            }
-        }
-
-        return layer1Mesh
-    }
-
-    return null
-})
+const defaultDataURL =
+    'data:image/png;base64,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'
 
 export let getSkin: Function
 
@@ -216,22 +162,15 @@ export function initPlayerHead() {
                 return await getSkin('MHF_Steve')
             }
 
-            const blob = await fetch(url).then((r) => r.blob())
-            const dataUrl = await new Promise((resolve) => {
-                const reader = new FileReader()
-                reader.onload = () => resolve(reader.result)
-                reader.readAsDataURL(blob)
-            })
-
-            return dataUrl
+            return await getDataURL(url)
         } else {
-            const data = await fetch('https://api.ashcon.app/mojang/v2/user/' + name).then((res) => res.json())
+            const dataURL = await getDataURL('https://mc-heads.net/skin/' + name)
 
-            if (data.code === undefined) {
-                return 'data:image/png;base64,' + data.textures.skin.data
+            if (dataURL === defaultDataURL) {
+                return await getDataURL('https://mc-heads.net/skin/MHF_Steve')
             }
-        }
 
-        return await getSkin('MHF_Steve')
+            return dataURL
+        }
     })
 }

@@ -379,8 +379,6 @@ async function parseParts(
 }
 
 export async function loadModel(p: string, identifier?: string) {
-    console.log('loading model', p)
-
     let regex = /\,(?=\s*?[\}\]])/g
     let correct = (await (await fetch(p)).text()).replace(regex, '')
 
@@ -404,9 +402,6 @@ export async function loadModel(p: string, identifier?: string) {
     }
 
     const root = scene.getObjectByName(identifier)
-    if (root.name.startsWith('player_head')) {
-        console.log('player head')
-    }
 
     root.position.set(camOrbit.x, camOrbit.y, camOrbit.z)
 
@@ -419,8 +414,6 @@ export async function loadModel(p: string, identifier?: string) {
 
     searchInputElement.blur()
     updateSearch('')
-
-    console.log('loaded model', p)
 }
 
 // TODO apply block model and texture

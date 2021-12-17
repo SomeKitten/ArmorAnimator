@@ -11,7 +11,7 @@ import {
 } from 'three'
 import { frame, resetPartFrameData, saveRotation, saveTranslation, tweenedFrameData, tweenFrames } from './frames'
 import { getAngle } from './maths'
-import { codes, mouse, searchInputElement } from './input'
+import { codes, mouse, pMouse, searchInputElement } from './input'
 import {
     updatePasses,
     selectedOutlinePassLine,
@@ -39,6 +39,8 @@ import {
     zAxisOuter,
     grid,
     point3D,
+    height,
+    width,
 } from './render'
 import { getRootObject, scene, target, targetQ } from './util'
 import _, { floor, round } from 'lodash'
@@ -64,7 +66,7 @@ export let translating = ''
 
 export let movementOrigin = 0
 export let movementAngle = 0
-export let originalCoord = 0
+export const originalCoords = new Vector3()
 
 export let highlightedPart: Object3D = null
 
@@ -247,8 +249,8 @@ export function startControls() {
 
     if (highlightedPart !== null) {
         let centerCoords = selectedScreenCoords()
-        x = mouse.x - centerCoords.x
-        y = mouse.y - centerCoords.y
+        x = pMouse.x - centerCoords.x
+        y = pMouse.y - centerCoords.y
     }
 
     if (highlightedPart !== null && xOuter.length > 0 && xInner.length == 0 && properties.rotatex.enabled()) {
@@ -289,8 +291,8 @@ export function startControls() {
         let coords2 = posScreenCoords(pos2)
 
         movementAngle = getAngle(coords1, coords2)
-        movementOrigin = rotateAroundOrigin(mouse, movementAngle).x
-        originalCoord = highlightedPart.parent.position.x
+        movementOrigin = rotateAroundOrigin(pMouse, movementAngle).x
+        originalCoords.copy(highlightedPart.parent.position)
     } else if (highlightedPart !== null && yLine.length > 0 && properties.translatey.enabled()) {
         translating = 'y'
 
@@ -305,8 +307,8 @@ export function startControls() {
         let coords2 = posScreenCoords(pos2)
 
         movementAngle = getAngle(coords1, coords2)
-        movementOrigin = rotateAroundOrigin(mouse, movementAngle).x
-        originalCoord = highlightedPart.parent.position.y
+        movementOrigin = rotateAroundOrigin(pMouse, movementAngle).x
+        originalCoords.copy(highlightedPart.parent.position)
     } else if (highlightedPart !== null && zLine.length > 0 && properties.translatez.enabled()) {
         translating = 'z'
 
@@ -321,8 +323,8 @@ export function startControls() {
         let coords2 = posScreenCoords(pos2)
 
         movementAngle = getAngle(coords1, coords2)
-        movementOrigin = rotateAroundOrigin(mouse, movementAngle).x
-        originalCoord = highlightedPart.parent.position.z
+        movementOrigin = rotateAroundOrigin(pMouse, movementAngle).x
+        originalCoords.copy(highlightedPart.parent.position)
     }
 }
 
@@ -330,8 +332,9 @@ export function startControls() {
 export function useControls() {
     if (highlightedPart !== null) {
         let centerCoords = selectedScreenCoords()
-        let x = mouse.x - centerCoords.x
-        let y = mouse.y - centerCoords.y
+
+        const x = pMouse.x - centerCoords.x
+        const y = pMouse.y - centerCoords.y
 
         if (rotating === 'x') {
             let prev = actualHighlightedRotation[0]
@@ -424,45 +427,13 @@ export function useControls() {
         // TODO reevaluate movementOrigin and originalCoord to avoid unpredictable behaviour
         // ? (such as jittering when moved close to the camera from far away)
 
-        const coefficient = Math.pow(camera.position.distanceTo(highlightedPart.parent.position), 15 / 16)
-        const delta = (rotateAroundOrigin(mouse, movementAngle).x - movementOrigin) * coefficient
+        const delta = rotateAroundOrigin(pMouse, movementAngle).x - movementOrigin
 
-        if (translating === 'x') {
-            highlightedPart.parent.position.x = originalCoord + delta
+        translatingFromDelta(delta)
 
-            if (codes.ShiftLeft) {
-                let temp = highlightedPart.parent.position.x
-                highlightedPart.parent.position.x = round(temp / snapDistance) * snapDistance
-            }
-            if (codes.ControlLeft) {
-                let temp = highlightedPart.parent.position.x
-                highlightedPart.parent.position.x = round(temp / altSnapDistance) * altSnapDistance
-            }
-        }
-        if (translating === 'y') {
-            highlightedPart.parent.position.y = originalCoord + delta
+        let coefficient = camera.position.distanceTo(highlightedPart.parent.position) * 1
 
-            if (codes.ShiftLeft) {
-                let temp = highlightedPart.parent.position.y
-                highlightedPart.parent.position.y = round(temp / snapDistance) * snapDistance
-            }
-            if (codes.ControlLeft) {
-                let temp = highlightedPart.parent.position.y
-                highlightedPart.parent.position.y = round(temp / altSnapDistance) * altSnapDistance
-            }
-        }
-        if (translating === 'z') {
-            highlightedPart.parent.position.z = originalCoord + delta
-
-            if (codes.ShiftLeft) {
-                let temp = highlightedPart.parent.position.z
-                highlightedPart.parent.position.z = round(temp / snapDistance) * snapDistance
-            }
-            if (codes.ControlLeft) {
-                let temp = highlightedPart.parent.position.z
-                highlightedPart.parent.position.z = round(temp / altSnapDistance) * altSnapDistance
-            }
-        }
+        translatingFromDelta(delta * coefficient)
 
         if (translating !== '') {
             saveTranslation(frame, highlightedPart, [
@@ -485,6 +456,45 @@ export function useControls() {
     }
 }
 
+function translatingFromDelta(delta: number) {
+    if (translating === 'x') {
+        highlightedPart.parent.position.x = originalCoords.x + delta
+
+        if (codes.ShiftLeft) {
+            let temp = highlightedPart.parent.position.x
+            highlightedPart.parent.position.x = round(temp / snapDistance) * snapDistance
+        }
+        if (codes.ControlLeft) {
+            let temp = highlightedPart.parent.position.x
+            highlightedPart.parent.position.x = round(temp / altSnapDistance) * altSnapDistance
+        }
+    }
+    if (translating === 'y') {
+        highlightedPart.parent.position.y = originalCoords.y + delta
+
+        if (codes.ShiftLeft) {
+            let temp = highlightedPart.parent.position.y
+            highlightedPart.parent.position.y = round(temp / snapDistance) * snapDistance
+        }
+        if (codes.ControlLeft) {
+            let temp = highlightedPart.parent.position.y
+            highlightedPart.parent.position.y = round(temp / altSnapDistance) * altSnapDistance
+        }
+    }
+    if (translating === 'z') {
+        highlightedPart.parent.position.z = originalCoords.z + delta
+
+        if (codes.ShiftLeft) {
+            let temp = highlightedPart.parent.position.z
+            highlightedPart.parent.position.z = round(temp / snapDistance) * snapDistance
+        }
+        if (codes.ControlLeft) {
+            let temp = highlightedPart.parent.position.z
+            highlightedPart.parent.position.z = round(temp / altSnapDistance) * altSnapDistance
+        }
+    }
+}
+
 export function posScreenCoords(point: Vector3) {
     let pos = point.clone()
     pos.project(camera)
@@ -494,7 +504,9 @@ export function posScreenCoords(point: Vector3) {
 
 export function selectedScreenCoords() {
     highlightedPart.getWorldPosition(target)
-    return posScreenCoords(target)
+    const pos = posScreenCoords(target)
+    pos.x = (pos.x * width) / height
+    return pos
 }
 
 // TODO fix controls front/back side detection
