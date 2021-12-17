@@ -4,7 +4,7 @@ import { genBlockUVs } from './model_loader'
 import { createTransparentMaterial, transparentTexture } from './render'
 import { cubes, getDataURL, isUrlFound, memoizer, target, targetE } from './util'
 
-export const headSize = 0.5938
+export const headSize = 0.593708
 
 let currentHead = ''
 
@@ -108,7 +108,7 @@ export function adjustHead() {
                     part.translation[2] += -target.z
                 }
                 if (part.translation !== undefined) {
-                    part.translation[1] += -1.641646
+                    part.translation[1] += -1.4385
                 }
                 if (part.skullowner !== undefined) {
                     if (typeof part.skullowner === 'string' && part.skullowner.includes('textures.minecraft.net')) {

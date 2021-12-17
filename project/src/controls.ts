@@ -48,14 +48,12 @@ import { createPropertyInputs, deletePropertyInputs, propertyInputDiv } from './
 import { updateAllKeyframes } from './keyframes'
 import { getHighlightedProperties, properties, updateKeyframeValues } from './properties'
 import { camera, camOrbit } from './camera'
-import { loadSettings, setSettingsPart, settingsPart } from './settings'
+import { loadSettings, setSettingsPart } from './settings'
+import { headSize } from './player_head'
 
 export const raycaster = new Raycaster()
 
 export let snapDistance = 0.25
-
-// for player heads
-export let altSnapDistance = 0.593708 / 4
 
 export let snapAngle = Math.PI / 4
 
@@ -429,11 +427,27 @@ export function useControls() {
 
         const delta = rotateAroundOrigin(pMouse, movementAngle).x - movementOrigin
 
-        translatingFromDelta(delta)
+        if (translating === 'x') {
+            highlightedPart.parent.position.x = translatingFromDelta(delta, originalCoords.x)
 
-        let coefficient = camera.position.distanceTo(highlightedPart.parent.position) * 1
+            let coefficient = camera.position.distanceTo(highlightedPart.parent.position) * 1
 
-        translatingFromDelta(delta * coefficient)
+            highlightedPart.parent.position.x = translatingFromDelta(delta * coefficient, originalCoords.x, true)
+        }
+        if (translating === 'y') {
+            highlightedPart.parent.position.y = translatingFromDelta(delta, originalCoords.y)
+
+            let coefficient = camera.position.distanceTo(highlightedPart.parent.position) * 1
+
+            highlightedPart.parent.position.y = translatingFromDelta(delta * coefficient, originalCoords.y, true)
+        }
+        if (translating === 'z') {
+            highlightedPart.parent.position.z = translatingFromDelta(delta, originalCoords.z)
+
+            let coefficient = camera.position.distanceTo(highlightedPart.parent.position) * 1
+
+            highlightedPart.parent.position.z = translatingFromDelta(delta * coefficient, originalCoords.z, true)
+        }
 
         if (translating !== '') {
             saveTranslation(frame, highlightedPart, [
@@ -456,43 +470,36 @@ export function useControls() {
     }
 }
 
-function translatingFromDelta(delta: number) {
-    if (translating === 'x') {
-        highlightedPart.parent.position.x = originalCoords.x + delta
+// TODO simplify this
+function translatingFromDelta(delta: number, original: number, snap: boolean = false) {
+    let temp = original + delta
 
+    if (snap) {
         if (codes.ShiftLeft) {
-            let temp = highlightedPart.parent.position.x
-            highlightedPart.parent.position.x = round(temp / snapDistance) * snapDistance
+            return round(temp / snapDistance) * snapDistance
         }
         if (codes.ControlLeft) {
-            let temp = highlightedPart.parent.position.x
-            highlightedPart.parent.position.x = round(temp / altSnapDistance) * altSnapDistance
-        }
-    }
-    if (translating === 'y') {
-        highlightedPart.parent.position.y = originalCoords.y + delta
+            const snaps = [
+                Math.round(temp - headSize / 2) + headSize / 2,
+                Math.round(temp + headSize / 2) - headSize / 2,
+                Math.round(temp - (headSize / 2 + 0.5)) + headSize / 2 + 0.5,
+                Math.round(temp + (headSize / 2 + 0.5)) - (headSize / 2 + 0.5),
+            ]
 
-        if (codes.ShiftLeft) {
-            let temp = highlightedPart.parent.position.y
-            highlightedPart.parent.position.y = round(temp / snapDistance) * snapDistance
-        }
-        if (codes.ControlLeft) {
-            let temp = highlightedPart.parent.position.y
-            highlightedPart.parent.position.y = round(temp / altSnapDistance) * altSnapDistance
-        }
-    }
-    if (translating === 'z') {
-        highlightedPart.parent.position.z = originalCoords.z + delta
+            let min = -1
+            let closest = 0
+            for (const snap of snaps) {
+                if (Math.abs(temp - snap) < min || min === -1) {
+                    min = Math.abs(temp - snap)
+                    closest = snap
+                }
+            }
 
-        if (codes.ShiftLeft) {
-            let temp = highlightedPart.parent.position.z
-            highlightedPart.parent.position.z = round(temp / snapDistance) * snapDistance
-        }
-        if (codes.ControlLeft) {
-            let temp = highlightedPart.parent.position.z
-            highlightedPart.parent.position.z = round(temp / altSnapDistance) * altSnapDistance
+            return closest
         }
     }
+
+    return temp
 }
 
 export function posScreenCoords(point: Vector3) {

@@ -5,7 +5,7 @@
 	"parts": [
 		{
 			"name": "player_head",
-			"position": [ 0, 4.75, 0 ],
+			"position": [ 0, 0, 0 ],
 			"shapes": [
 				{
 					"type": "block",
