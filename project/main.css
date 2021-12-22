@@ -118,7 +118,7 @@ input {
     text-align: center;
     color: white;
     max-width: 15%;
-    z-index: 2;
+    z-index: 10;
 }
 
 .property-input-label {
@@ -153,6 +153,28 @@ input {
     width: 16px;
 }
 
+#timeline-label-div {
+    background-color: rgba(46, 46, 46, 0.431);
+    width: 20%;
+    height: 100%;
+    position: absolute;
+    z-index: 5;
+}
+
+.timeline-label {
+    color: white;
+    font-size: 1rem;
+    font-weight: bold;
+    position: absolute;
+}
+
+#timeline-canvas {
+    position: absolute;
+    z-index: 7;
+    width: 100vw;
+    height: 100%;
+}
+
 #frame-number {
     font-size: 2rem;
     text-align: right;
@@ -169,12 +191,14 @@ input {
 
 .keyframe {
     position: absolute;
+    z-index: 2;
 }
 
 .timeline-bar {
     position: absolute;
     top: 0;
     bottom: auto;
+    z-index: 1;
 }
 
 #grey {

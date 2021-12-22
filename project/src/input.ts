@@ -53,6 +53,7 @@ import {
     dragOverFrame,
     dragPath,
     dragProperty,
+    keyframeDrag,
     releaseDragKeyframe,
     setDragOverFrame,
 } from './timeline'
@@ -459,21 +460,7 @@ export function onMouseMove(event: MouseEvent) {
     pMouse.y = -(event.clientY / height) * 2 + 1
 
     if (dragKeyframe !== null) {
-        dragKeyframe.style.left = clamp(event.clientX - 8, 0, width - 16) + 'px'
-
-        const f = clamp(floor((event.clientX - 8) / ((width - 16) / frameAmount) + 0.5), 0, frameAmount - 1)
-
-        setRawFrameData(cloneDeep(dragFrameData))
-
-        if (frameData[f][dragPath.part] === undefined) {
-            frameData[f][dragPath.part] = {}
-        }
-        frameData[f][dragPath.part][dragPath.property] = dragProperty
-
-        tweenFrames()
-        loadFrameData(tweenedFrameData[frame])
-
-        setDragOverFrame(f)
+        keyframeDrag(event)
     } else if (moveTimelineBar) {
         timelineMove(event)
     } else {

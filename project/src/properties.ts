@@ -294,6 +294,7 @@ export function getHighlightedPropertyNames() {
     return showProperties
 }
 
+// TODO rename this (unrelated to keyframes)
 export function updateKeyframeValues() {
     const showProperties = getHighlightedProperties()
 

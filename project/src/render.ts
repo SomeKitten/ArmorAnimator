@@ -29,6 +29,7 @@ import { mouse, onSceneMouseDown } from './input'
 import { scene } from './util'
 import { camera, insideCamera } from './camera'
 import { properties } from './properties'
+import { timelineCanvas, timelineContext, timelineLabels } from './timeline'
 
 export let timelineHeight = 0.25
 export let width = window.innerWidth
@@ -203,6 +204,21 @@ export function resizeWindow() {
 
     insideCamera.aspect = width / height
     insideCamera.updateProjectionMatrix()
+
+    timelineContext.clearRect(0, 0, timelineCanvas.width, timelineCanvas.height)
+    timelineContext.beginPath()
+    for (let l = 0; l < timelineLabels.length; l++) {
+        const label = timelineLabels[l] as HTMLDivElement
+
+        label.style.fontSize = ((window.innerHeight * timelineHeight) / timelineLabels.length) * 0.7 + 'px'
+        label.style.height = (timelineHeight * window.innerHeight) / timelineLabels.length + 'px'
+        label.style.top = `${(l * timelineHeight * window.innerHeight) / timelineLabels.length}px`
+
+        timelineContext.moveTo(0, ((l + 1) * timelineCanvas.height) / timelineLabels.length)
+        timelineContext.lineTo(timelineCanvas.width, ((l + 1) * timelineCanvas.height) / timelineLabels.length)
+    }
+    timelineContext.strokeStyle = '#ffffff'
+    timelineContext.stroke()
 }
 
 export function updatePasses() {

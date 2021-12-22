@@ -3,6 +3,7 @@ import { highlightedPart, movementAngle, movementOrigin } from './controls'
 import { commandFrameData, frameData, partFrameData, tweenedFrameData } from './frames'
 import { codes } from './input'
 import { getHighlightedProperties, properties } from './properties'
+import { timelines } from './timeline'
 import { cubes, scene } from './util'
 
 export function debugLog() {
@@ -31,6 +32,8 @@ export function debugLog() {
     console.log(movementAngle)
     console.log('CAMERAPOS')
     console.log(camera.position)
+    console.log('TIMELINES')
+    console.log(timelines)
     // console.log("MODELS");
     // console.log(models);
     for (const property in properties) {
