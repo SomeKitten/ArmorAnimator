@@ -20,6 +20,7 @@ import {
 
 export class Property {
     displayName: string
+
     type: 'string' | 'number' | 'boolean'
 
     element: HTMLInputElement
@@ -28,6 +29,7 @@ export class Property {
     set: (f: number, value: any) => void
     get: () => any
     enabled: () => boolean
+
     constructor(
         displayName: string,
         type: 'string' | 'number' | 'boolean',
@@ -274,6 +276,18 @@ export function getHighlightedProperties() {
     for (const property in properties) {
         if (properties[property].enabled()) {
             showProperties.push(properties[property])
+        }
+    }
+
+    return showProperties
+}
+
+export function getHighlightedPropertyNames() {
+    const showProperties = []
+
+    for (const property in properties) {
+        if (properties[property].enabled()) {
+            showProperties.push(property)
         }
     }
 

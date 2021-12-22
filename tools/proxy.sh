@@ -1,0 +1,1 @@
+corsa --bind :25564 --allow-proxy http://textures.minecraft.net --allow-origin ALL

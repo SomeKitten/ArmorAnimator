@@ -140,7 +140,7 @@ export function deleteAll() {
  * @return {Element} html element
  */
 export function htmlToElement(html: string): Element {
-    var template = document.createElement('template')
+    const template = document.createElement('template')
     html = html.trim() // Never return a text node of whitespace as the result
     template.innerHTML = html
     return template.content.firstChild as Element
@@ -151,7 +151,7 @@ export function htmlToElement(html: string): Element {
  * @return {NodeList}
  */
 export function htmlToElements(html: string): NodeList {
-    var template = document.createElement('template')
+    const template = document.createElement('template')
     template.innerHTML = html
     return template.content.childNodes
 }
@@ -221,7 +221,7 @@ export function cleanNumber(num: string | number, truncate: number) {
     }
 }
 
-// NEXT move to properties.ts
+// TODO move to properties.ts
 export function getHeadProperty(part: Object3D) {
     return tweenedFrameData[frame][part.name]?.skullowner || ''
 }

@@ -1,4 +1,4 @@
-import _, { clamp, floor } from 'lodash'
+import _, { clamp, cloneDeep, floor, isEmpty } from 'lodash'
 import { Vector2 } from 'three'
 import { saveCommands } from './command_generator'
 import {
@@ -14,17 +14,21 @@ import {
     translating,
 } from './controls'
 import {
+    deleteKeyframe,
     frame,
     frameAmount,
     frameData,
+    frameNumber,
+    loadFrameData,
     moveTimelineBar,
     nextFrame,
     prevFrame,
     setFrame,
     setFrameAmount,
     setFrameData,
+    setRawFrameData,
+    setTimelineBar,
     timelineBarRelease,
-    timelineSelectBar,
     tweenedFrameData,
     tweenFrames,
 } from './frames'
@@ -43,7 +47,15 @@ import {
     setProjectDescription,
     setProjectName,
 } from './util'
-import { deleteKeyframe, dragKeyframes, dragKeyframeTo, resetDragKeyframe, updateAllKeyframes } from './keyframes'
+import {
+    dragFrameData,
+    dragKeyframe,
+    dragOverFrame,
+    dragPath,
+    dragProperty,
+    releaseDragKeyframe,
+    setDragOverFrame,
+} from './timeline'
 import { camera, cameraControls, camOrbit, lookAt } from './camera'
 import { debugLog } from './debug'
 import saveAs from 'file-saver'
@@ -75,7 +87,6 @@ searchInputElement.onfocus = function () {
     updateSearch(searchInputElement.value)
 }
 
-// ipcRenderer.on('window-blur', allKeysUp)
 export function allKeysUp() {
     codes = {}
 }
@@ -93,7 +104,7 @@ document.onmouseup = function (event) {
     resetRotating()
     resetTranslating()
 
-    resetDragKeyframe()
+    releaseDragKeyframe(clamp(floor((event.clientX - 8) / ((width - 16) / frameAmount) + 0.5), 0, frameAmount - 1))
 
     if (!isMouseDrag) {
         if (event.button === 0) leftClick()
@@ -314,6 +325,7 @@ export function onDocumentKeyDown(event: KeyboardEvent) {
                 deleteEntity(highlightedPart)
             }
         } else if (codes.ShiftLeft) {
+            // NEXT deleting keyframes
             deleteKeyframe(frame, '')
         } else {
             if (highlightedPart !== null) {
@@ -322,7 +334,7 @@ export function onDocumentKeyDown(event: KeyboardEvent) {
             }
         }
 
-        updateAllKeyframes()
+        // updateAllKeyframes()
     }
 
     if (event.code === 'KeyS' && codes.ControlLeft) {
@@ -426,23 +438,15 @@ function handleVisibilityChange() {
 export function timelineMove(event: MouseEvent) {
     event.preventDefault()
 
-    const dragOverFrame = clamp(floor((event.clientX - 8) / ((width - 16) / frameAmount) + 0.5), 0, frameAmount - 1)
+    const f = clamp(floor((event.clientX - 8) / ((width - 16) / frameAmount) + 0.5), 0, frameAmount - 1)
 
-    if (dragKeyframes === null) {
-        setFrame(dragOverFrame)
+    setFrame(f)
 
-        let head = document.getElementById('timeline-bar-head')
-        let bar = document.getElementById('timeline-bar')
+    let head = document.getElementById('timeline-bar-head')
+    let bar = document.getElementById('timeline-bar')
 
-        head.style.left = clamp(event.x - 8, 0, width - 16) + 'px'
-        bar.style.left = clamp(event.x - 8, 0, width - 16) + 'px'
-    } else {
-        dragKeyframes[0].style.left = clamp(event.x - 8, 0, width - 16) + 'px'
-        if (dragKeyframes[1] !== undefined) {
-            dragKeyframes[1].style.left = clamp(event.x - 8, 0, width - 16) + 'px'
-        }
-        dragKeyframeTo(frameData, dragOverFrame)
-    }
+    head.style.left = clamp(event.x - 8, 0, width - 16) + 'px'
+    bar.style.left = clamp(event.x - 8, 0, width - 16) + 'px'
 }
 
 document.addEventListener('mousemove', onMouseMove)
@@ -454,12 +458,28 @@ export function onMouseMove(event: MouseEvent) {
     pMouse.x = (event.clientX / height) * 2 - 1
     pMouse.y = -(event.clientY / height) * 2 + 1
 
-    if (!moveTimelineBar) {
+    if (dragKeyframe !== null) {
+        dragKeyframe.style.left = clamp(event.clientX - 8, 0, width - 16) + 'px'
+
+        const f = clamp(floor((event.clientX - 8) / ((width - 16) / frameAmount) + 0.5), 0, frameAmount - 1)
+
+        setRawFrameData(cloneDeep(dragFrameData))
+
+        if (frameData[f][dragPath.part] === undefined) {
+            frameData[f][dragPath.part] = {}
+        }
+        frameData[f][dragPath.part][dragPath.property] = dragProperty
+
+        tweenFrames()
+        loadFrameData(tweenedFrameData[frame])
+
+        setDragOverFrame(f)
+    } else if (moveTimelineBar) {
+        timelineMove(event)
+    } else {
         if (isMouseDown && rotating === '' && translating === '') {
             cameraControls(event.movementX, event.movementY)
         }
-    } else {
-        timelineMove(event)
     }
 
     setMouseDrag(true)

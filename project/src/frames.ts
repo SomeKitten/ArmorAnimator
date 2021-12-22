@@ -7,7 +7,7 @@ import { Frame, FrameData } from './interfaces'
 import { wrap } from './maths'
 import { width } from './render'
 import { scene } from './util'
-import { updateAllKeyframes } from './keyframes'
+import { dragKeyframe, updateAllKeyframes } from './timeline'
 import { loadKeyframeValues, updateKeyframeValues } from './properties'
 import { adjustHead } from './player_head'
 
@@ -51,6 +51,10 @@ export function resetFrameData() {
     frameData = cloneDeep(cleanFrames)
 }
 
+export function setRawFrameData(newData: FrameData) {
+    frameData = newData
+}
+
 export function setFrameData(newData: FrameData) {
     frameData = newData
 
@@ -63,10 +67,12 @@ export function resetPartFrameData() {
 }
 
 export function timelineSelectBar(event: MouseEvent) {
-    moveTimelineBar = true
+    if (dragKeyframe === null) {
+        moveTimelineBar = true
 
-    const clickFrame = clamp(floor((event.clientX - 8) / ((width - 16) / frameAmount) + 0.5), 0, frameAmount - 1)
-    setFrame(clickFrame)
+        const clickFrame = clamp(floor((event.clientX - 8) / ((width - 16) / frameAmount) + 0.5), 0, frameAmount - 1)
+        setFrame(clickFrame)
+    }
 }
 
 export function timelineBarRelease() {
@@ -116,6 +122,9 @@ export function tweenProperty(frame: number, partName: string, propertyName: str
         nextData = frameData[nextFrame][partName][propertyName]
     } else {
         nextData = currentData
+    }
+    if (frame === -1) {
+        currentData = nextData
     }
 
     for (let f = frame; f < nextFrame; f++) {
@@ -346,5 +355,18 @@ export function saveBlock(f: number, part: Object3D, block: string) {
         partFramePart.block = block
     }
 
+    updateAllKeyframes()
+}
+
+export function deleteKeyframe(f: number, name: string) {
+    for (const [key] of Object.entries(frameData[frame])) {
+        if (key.includes(name)) {
+            delete frameData[f][key]
+            delete partFrameData[f][key]
+        }
+    }
+
+    tweenFrames()
+    loadFrameData(tweenedFrameData[frame])
     updateAllKeyframes()
 }

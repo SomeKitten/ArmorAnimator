@@ -24,7 +24,7 @@ import { fps, frame, nextFrame, setFrame, setFrameAmount, setTimelineBar, timeli
 import { searchElement, onSearch, onSearchType, initInput, searchInputElement } from './input'
 import { composer, initRender, resizeWindow } from './render'
 import { clock, lastFrame, playing, setLastFrame } from './util'
-import { updateAllKeyframes } from './keyframes'
+import { updateAllKeyframes } from './timeline'
 import { movement, resetCamera, updateCamOrbit } from './camera'
 import { initPlayerHead } from './player_head'
 

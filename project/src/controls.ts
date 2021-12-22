@@ -45,7 +45,7 @@ import {
 import { getRootObject, scene, target, targetQ } from './util'
 import _, { floor, round } from 'lodash'
 import { createPropertyInputs, deletePropertyInputs, propertyInputDiv } from './menu'
-import { updateAllKeyframes } from './keyframes'
+import { updateAllKeyframes } from './timeline'
 import { getHighlightedProperties, properties, updateKeyframeValues } from './properties'
 import { camera, camOrbit } from './camera'
 import { loadSettings, setSettingsPart } from './settings'
@@ -247,8 +247,8 @@ export function startControls() {
 
     if (highlightedPart !== null) {
         let centerCoords = selectedScreenCoords()
-        x = pMouse.x - centerCoords.x
-        y = pMouse.y - centerCoords.y
+        x = mouse.x - centerCoords.x
+        y = mouse.y - centerCoords.y
     }
 
     if (highlightedPart !== null && xOuter.length > 0 && xInner.length == 0 && properties.rotatex.enabled()) {
@@ -331,17 +331,17 @@ export function useControls() {
     if (highlightedPart !== null) {
         let centerCoords = selectedScreenCoords()
 
-        const x = pMouse.x - centerCoords.x
-        const y = pMouse.y - centerCoords.y
+        const x = mouse.x - centerCoords.x
+        const y = mouse.y - centerCoords.y
 
         if (rotating === 'x') {
             let prev = actualHighlightedRotation[0]
             if (isFront(xAxisCircle)) {
-                highlightedPart.rotation.x = movementOrigin - Math.atan2(x, y)
-                actualHighlightedRotation[0] = movementOrigin - Math.atan2(x, y)
+                highlightedPart.rotation.x = movementOrigin - Math.atan2((x * width) / height, y)
+                actualHighlightedRotation[0] = movementOrigin - Math.atan2((x * width) / height, y)
             } else {
-                highlightedPart.rotation.x = movementOrigin + Math.atan2(x, y)
-                actualHighlightedRotation[0] = movementOrigin + Math.atan2(x, y)
+                highlightedPart.rotation.x = movementOrigin + Math.atan2((x * width) / height, y)
+                actualHighlightedRotation[0] = movementOrigin + Math.atan2((x * width) / height, y)
             }
 
             if (codes.ShiftLeft) {
@@ -362,11 +362,11 @@ export function useControls() {
         if (rotating === 'y') {
             let prev = actualHighlightedRotation[1]
             if (isFront(yAxisCircle)) {
-                highlightedPart.rotation.y = movementOrigin + Math.atan2(x, y)
-                actualHighlightedRotation[1] = movementOrigin + Math.atan2(x, y)
+                highlightedPart.rotation.y = movementOrigin + Math.atan2((x * width) / height, y)
+                actualHighlightedRotation[1] = movementOrigin + Math.atan2((x * width) / height, y)
             } else {
-                highlightedPart.rotation.y = movementOrigin - Math.atan2(x, y)
-                actualHighlightedRotation[1] = movementOrigin - Math.atan2(x, y)
+                highlightedPart.rotation.y = movementOrigin - Math.atan2((x * width) / height, y)
+                actualHighlightedRotation[1] = movementOrigin - Math.atan2((x * width) / height, y)
             }
 
             if (codes.ShiftLeft) {
@@ -391,11 +391,11 @@ export function useControls() {
         if (rotating === 'z') {
             let prev = actualHighlightedRotation[2]
             if (isFront(zAxisCircle)) {
-                highlightedPart.rotation.z = movementOrigin - Math.atan2(x, y)
-                actualHighlightedRotation[2] = movementOrigin - Math.atan2(x, y)
+                highlightedPart.rotation.z = movementOrigin - Math.atan2((x * width) / height, y)
+                actualHighlightedRotation[2] = movementOrigin - Math.atan2((x * width) / height, y)
             } else {
-                highlightedPart.rotation.z = movementOrigin + Math.atan2(x, y)
-                actualHighlightedRotation[2] = movementOrigin + Math.atan2(x, y)
+                highlightedPart.rotation.z = movementOrigin + Math.atan2((x * width) / height, y)
+                actualHighlightedRotation[2] = movementOrigin + Math.atan2((x * width) / height, y)
             }
 
             if (codes.ShiftLeft) {
@@ -512,7 +512,6 @@ export function posScreenCoords(point: Vector3) {
 export function selectedScreenCoords() {
     highlightedPart.getWorldPosition(target)
     const pos = posScreenCoords(target)
-    pos.x = (pos.x * width) / height
     return pos
 }
 

@@ -10,6 +10,8 @@ let currentHead = ''
 
 export async function updateSkin(part: Object3D, name: string) {
     if (part.children.length < 2) {
+        // TODO load existing player_head model?
+
         const texture = new Texture()
         texture.generateMipmaps = false
         texture.minFilter = NearestFilter
