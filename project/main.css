@@ -24,6 +24,7 @@ body {
     height: 100%;
     user-select: none;
     font-size: 2rem;
+    color: white;
 }
 
 ul {
@@ -60,7 +61,6 @@ input {
     left: 0;
     right: 0;
     text-align: center;
-    color: white;
     z-index: 1;
 }
 
@@ -79,6 +79,52 @@ input {
     border: 1px solid var(--secondary-background);
     font-size: 2rem;
     box-shadow: 0 0 1rem black;
+}
+
+#controls {
+    position: absolute;
+    z-index: 20;
+    width: fit-content;
+    font-size: large;
+    transform: translateX(-100%);
+    transition: all 0.3s ease-in-out;
+}
+
+#controls:hover {
+    transform: translateX(0);
+}
+
+#controls ul {
+    width: fit-content;
+    float: left;
+}
+
+#controls ul:hover {
+    transform: unset;
+}
+
+#controls li {
+    height: fit-content;
+    line-height: normal;
+    padding: 3px 10px 3px 10px;
+    margin: 2px;
+}
+
+#controls li:hover {
+    transform: unset;
+}
+
+#controls div {
+    position: absolute;
+    margin: 2rem 1rem 0 50%;
+    padding: 3px 3px 3px 55%;
+    width: fit-content;
+    white-space: nowrap;
+    background-color: var(--background);
+    border: 3px solid var(--secondary-background);
+    border-radius: 0.3rem;
+    box-shadow: 0 0 1rem black;
+    z-index: -1;
 }
 
 .property-input-type {
@@ -116,7 +162,6 @@ input {
     right: 0;
     top: 0;
     text-align: center;
-    color: white;
     max-width: 15%;
     z-index: 10;
 }
@@ -162,7 +207,6 @@ input {
 }
 
 .timeline-label {
-    color: white;
     font-size: 1rem;
     font-weight: bold;
     position: absolute;
@@ -173,6 +217,7 @@ input {
     z-index: 7;
     width: 100vw;
     height: 100%;
+    pointer-events: none;
 }
 
 #frame-number {
@@ -186,7 +231,6 @@ input {
     right: 0;
     top: 0;
     margin: 0.5rem;
-    color: white;
 }
 
 .keyframe {

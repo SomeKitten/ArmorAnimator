@@ -21,9 +21,28 @@
             <ul id="search-results"></ul>
         </div>
 
+        <!-- TODO make toggleable instead of just on hover -->
+        <div id="controls">
+            <div>Controls</div>
+            <ul>
+                <li>Left click + drag to orbit camera</li>
+                <li>Right click + drag to look around FPS style (wasd, q, & e)</li>
+                <li>Middle click + drag to pan camera</li>
+                <li>Scroll to zoom in and out</li>
+                <li>Right/Left arrows to move along the timeline</li>
+                <li>Scroll when on top of a number to make it go up/down</li>
+                <li>x to center camera</li>
+                <li>Shift+space to type in the search</li>
+                <li>Escape to exit the search</li>
+                <li>Shift+drag to snap</li>
+                <li>Ctrl+drag to snap player heads</li>
+                <li>Ctrl+S to save your project as a .aaproj</li>
+                <li>Ctrl+E to export your project as a .zip (datapack)</li>
+            </ul>
+        </div>
+
         <div class="property-input" id="property-input"></div>
 
-        <!-- TODO better timeline interface (lines to indicate frames and such) -->
         <div class="timeline" id="timeline">
             <img src="./images/arrow.png" alt="" class="timeline-bar" id="timeline-bar-head" draggable="false" />
             <img src="./images/line.png" alt="" class="timeline-bar" id="timeline-bar" draggable="false" />

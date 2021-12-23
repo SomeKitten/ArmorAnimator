@@ -1,3 +1,5 @@
+// TODO make timeline variables more universal?
+
 import { clamp, cloneDeep, floor } from 'lodash'
 import { Object3D } from 'three'
 import { highlightedPart } from './controls'

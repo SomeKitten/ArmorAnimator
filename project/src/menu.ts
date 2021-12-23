@@ -4,13 +4,14 @@
 // TODO allow mob stacking
 // TODO toggles and inputs for commonly used data tags
 // TODO generate toggles and inputs for all data tags (more research needed)
+// TODO swap label and input vertically (label on top, input on bottom)
+// TODO make menu scrollable (not overlapping timeline or lower)
+// TODO drag as alternative to scroll on numbers
 
 import { toNumber } from 'lodash'
 import { cleanNumber, htmlToElement } from './util'
-import { degToRad } from 'three/src/math/MathUtils'
 import { getHighlightedProperties, Property } from './properties'
-import { frame, frameData, tweenedFrameData, tweenFrames } from './frames'
-import { highlightedPart } from './controls'
+import { frame, tweenFrames } from './frames'
 
 const inputHTML = {
     normal: `<input class="property-input-type" type="text">`,

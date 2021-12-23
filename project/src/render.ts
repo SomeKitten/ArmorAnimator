@@ -192,6 +192,8 @@ for (let z = 0; z < 16; z++) {
     grid.add(line)
 }
 
+// TODO ground plane (horizontally snapping grid, but not vertically)
+
 export function resizeWindow() {
     width = window.innerWidth
     height = window.innerHeight * (1 - timelineHeight)
@@ -214,8 +216,10 @@ export function resizeWindow() {
         label.style.height = (timelineHeight * window.innerHeight) / timelineLabels.length + 'px'
         label.style.top = `${(l * timelineHeight * window.innerHeight) / timelineLabels.length}px`
 
-        timelineContext.moveTo(0, ((l + 1) * timelineCanvas.height) / timelineLabels.length)
-        timelineContext.lineTo(timelineCanvas.width, ((l + 1) * timelineCanvas.height) / timelineLabels.length)
+        if (l < timelineLabels.length - 1) {
+            timelineContext.moveTo(0, ((l + 1) * timelineCanvas.height) / timelineLabels.length)
+            timelineContext.lineTo(timelineCanvas.width, ((l + 1) * timelineCanvas.height) / timelineLabels.length)
+        }
     }
     timelineContext.strokeStyle = '#ffffff'
     timelineContext.stroke()

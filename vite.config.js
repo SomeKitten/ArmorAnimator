@@ -8,5 +8,8 @@ export default {
     server: {
         cors: true,
     },
+    preview: {
+        host: true,
+    },
     publicDir: './res',
 }

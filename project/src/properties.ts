@@ -1,3 +1,5 @@
+// TODO redo properties again to be simpler (set code may be able to be simplified)
+
 import { Object3D } from 'three'
 import { degToRad, radToDeg } from 'three/src/math/MathUtils'
 import { highlightedPart, setHighlightedPart } from './controls'
